@@ -1,599 +1,603 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <title>BLTiers v4.3.4</title>
-    <link rel="icon" type="image/png" href="Normal.png">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        :root{--bg:#1c1d30;--panel:rgba(52,53,79,0.7);--inner:rgba(52,53,79,0.5);--text:#e3e5e8;--text-muted:#9fadbd;--highlight:#fff;--accent:#f39c12;--cover-w:75px;--exp-cover-w:160px;--radius:8px;--box-alpha:0.6;--glass-border:rgba(255,255,255,0.08);--glass-shadow:0 4px 16px 0 rgba(0,0,0,0.2);--sidebar-w:330px;color-scheme:dark}
-        body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;margin:0;padding:0;transition:background .3s,color .3s;min-height:100vh;overflow-x:hidden}
-        .app-container{display:none}
-        .app-container.active{display:block}
-        .navbar{display:flex;justify-content:space-between;align-items:center;padding:0 24px;height:60px;position:sticky;top:0;z-index:100;background:rgba(30,30,30,0.4);border-bottom:1px solid rgba(255,255,255,0.1);backdrop-filter:blur(16px) saturate(180%);-webkit-backdrop-filter:blur(16px) saturate(180%);box-shadow:0 4px 30px rgba(0,0,0,0.1);box-sizing:border-box}
-        .navbar-left,.navbar-right{display:flex;align-items:center;gap:12px;width:280px}
-        .navbar-right{justify-content:flex-end;gap:10px}
-        .nav-link{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;cursor:pointer;transition:.2s}
-        .nav-link:hover{filter:brightness(1.2)}
-        .navbar-logo-icon{font-size:26px;font-weight:bold;color:var(--accent);letter-spacing:1px;display:flex;gap:6px;cursor:pointer;position:relative;margin-right:4px;line-height:1}
-        .braille-theme-select{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;appearance:none;-webkit-appearance:none;border:none;z-index:10}
-        .nav-avatar{width:36px;height:36px;border-radius:50%;object-fit:cover;border:1px solid var(--glass-border);box-shadow:0 2px 8px rgba(0,0,0,0.3)}
-        .nav-username{font-size:16px;font-weight:700;color:var(--highlight);letter-spacing:.3px}
-        .navbar-center{display:flex;align-items:center;gap:12px;flex:1;justify-content:center}
-        input[type="text"],input[type="number"],select,.panel-btn{appearance:none;background:rgba(0,0,0,0.4);border:1px solid var(--glass-border);color:var(--highlight);padding:0 16px;border-radius:18px;outline:none;font-size:14px;transition:.2s;height:36px;box-sizing:border-box}
-        input[type="number"]{padding:0 12px;-moz-appearance:textfield}
-        input[type="number"]::-webkit-outer-spin-button,input[type="number"]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
-        select{padding-right:32px;background-image:url('data:image/svg+xml;utf8,<svg fill="%239fadbd" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');background-repeat:no-repeat;background-position:right 10px center;background-size:14px;cursor:pointer}
-        input:focus,select:focus{border-color:var(--accent);background:rgba(0,0,0,0.6)}
-        select option{background:#1a1c23;color:#fff}
-        #username,#exp-search-input,#cal-username{width:100%;box-sizing:border-box;height:36px!important}
-        #username-container{width:240px}
-        #media-type,#exp-media-type-sync{width:100px;cursor:pointer}
-        .fetch-btn{background:rgba(0,0,0,0.4);color:var(--text);border:1px solid var(--glass-border);font-size:14px;font-weight:bold;cursor:pointer;padding:0 18px;height:36px;border-radius:18px;transition:.2s;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center}
-        .fetch-btn:hover{background:var(--accent);color:#000;border-color:var(--accent)}
-        .fetch-btn:active{transform:translateY(1px)}
-        .icon-btn,.color-tier-btn{background:rgba(255,255,255,0.05);border:1px solid var(--glass-border);color:var(--highlight);cursor:pointer;width:36px;height:36px;min-width:36px;max-width:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:0;transition:.2s;overflow:hidden}
-        .icon-btn:hover{background:var(--accent);color:var(--bg);border-color:var(--accent);transform:scale(1.05)}
-        .icon-btn svg{width:18px;height:18px;pointer-events:none;}
-        .glass{background:var(--panel);border:1px solid var(--glass-border);box-shadow:var(--glass-shadow);backdrop-filter:blur(8px) saturate(150%);-webkit-backdrop-filter:blur(8px) saturate(150%)}
-        select.full-width{width:100%;border-radius:8px;padding:8px 12px;height:auto}
-        button.action-btn,label.action-btn{background:rgba(0,0,0,0.4);border:1px solid var(--glass-border);color:var(--highlight);padding:8px 12px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:8px;box-sizing:border-box;margin:0}
-        button.action-btn:hover:not(:disabled),label.action-btn:hover{background:rgba(255,255,255,0.1);border-color:var(--accent)}
-        button.action-btn:disabled{opacity:0.4;cursor:not-allowed}
-        .settings-panel{padding:24px;display:none;grid-template-columns:repeat(4,minmax(0,1fr));gap:24px;border-radius:0 0 16px 16px;margin:0 24px 24px;align-items:start;border-top:none}
-        @media (max-width:1200px){.settings-panel{grid-template-columns:repeat(2,1fr)}}
-        @media (max-width:768px){.settings-panel{grid-template-columns:1fr}}
-        .settings-panel.show{display:grid;animation:slideDown .1s ease-out}
-        @keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
-        .settings-group{display:flex;flex-direction:column;gap:12px}
-        .settings-title{font-size:11px;font-weight:bold;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;transition:color .2s}
-        .settings-title.clickable:hover{color:var(--accent);cursor:pointer}
-        .settings-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-        .toggles-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;width:100%}
-        label{display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;white-space:nowrap}
-        input[type="checkbox"]{appearance:none;background:rgba(0,0,0,0.4);border:1px solid var(--glass-border);width:16px;height:16px;border-radius:4px;display:inline-flex;justify-content:center;align-items:center;cursor:pointer;transition:.2s}
-        input[type="checkbox"]:checked{background:var(--accent);border-color:var(--accent)}
-        input[type="checkbox"]:checked::after{content:'✓';color:#000;font-size:12px;font-weight:bold}
-        input[type="range"]{cursor:pointer;width:100%;accent-color:var(--accent)}
-        .workspace{padding:0 24px 24px 24px}
-        .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:16px;border-radius:12px;font-size:12px;margin-top:5px}
-        .stats-grid div{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,0.05);padding-bottom:6px}
-        .stats-grid div:nth-last-child(-n+2){border-bottom:none;padding-bottom:0}
-        .chart-wrapper{display:flex;height:160px;align-items:flex-end;gap:6px;margin-top:10px;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:5px;overflow-x:auto;overflow-y:hidden}
-        .chart-wrapper.enlarged{height:450px!important}
-        .chart-bar-container{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;min-width:14px}
-        .chart-bar{width:100%;background:var(--accent);border-radius:2px 2px 0 0;transition:height .3s ease-out;min-height:2px}
-        .chart-val{font-size:10px;color:var(--highlight);margin-bottom:4px;font-weight:bold}
-        .chart-label{font-size:10px;color:var(--text-muted);margin-top:6px;font-weight:600;white-space:nowrap}
-        .color-swatch-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:6px;margin-top:6px}
-        .color-swatch{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid rgba(255,255,255,0.1);transition:.2s}
-        .color-swatch:hover{transform:scale(1.3);border-color:#fff;z-index:2;position:relative}
-        .custom-color-btn{padding:8px 12px;font-size:12px;border:1px solid var(--glass-border);border-radius:8px;cursor:pointer;color:#fff;display:flex;justify-content:center;width:100%;font-weight:500;background:rgba(0,0,0,0.3);transition:.2s}
-        .custom-color-btn:hover{border-color:var(--accent)}
-        .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:999;backdrop-filter:blur(4px)}
-        .tier-modal{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg);border:1px solid var(--glass-border);box-shadow:var(--glass-shadow);border-radius:12px;padding:20px;z-index:1000;width:650px;max-height:80vh;overflow-y:auto}
-        #tier-list-container{border-radius:var(--radius);display:flex;flex-direction:column;gap:6px;padding:32px;position:relative}
-        .tier-row{display:flex;margin-bottom:0;border-radius:var(--radius);overflow:visible;min-height:calc(var(--cover-w) * 1.6);transition:background .3s}
-        .tier-label{width:85px;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:rgba(0,0,0,0.8);text-align:center;outline:none;padding:4px 10px;flex-shrink:0;position:relative;text-shadow:0 1px 2px rgba(255,255,255,0.3);border-radius:var(--radius) 0 0 var(--radius)}
-        body.tier-font-white .tier-label{color:#fff}
-        body.tier-font-shadow .tier-label{text-shadow:0 2px 6px rgba(0,0,0,0.8)}
-        body.tier-font-white:not(.tier-font-shadow) .tier-label{text-shadow:none}
-        .tier-controls{position:absolute;top:4px;right:4px;opacity:0;transition:.2s;z-index:20;display:grid;grid-template-columns:1fr 1fr;gap:4px}
-        .tier-left-controls{position:absolute;top:6px;left:6px;opacity:0;transition:.2s;z-index:20}
-        .tier-label:hover .tier-controls,.tier-label:hover .tier-left-controls{opacity:1}
-        .tier-action-btn,.delete-tier{background:rgba(0,0,0,0.5);color:#fff;border-radius:4px;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;border:1px solid rgba(255,255,255,0.2);padding:0;transition:.2s;line-height:1}
-        .tier-action-btn:hover,.delete-tier:hover{background:var(--accent);border-color:var(--accent);color:#000;transform:scale(1.1)}
-        .delete-tier:hover{background:#ff4c4c;border-color:#ff4c4c;color:#fff}
-        .color-tier-btn{background:rgba(0,0,0,0.5);color:#fff;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;border:1px solid rgba(255,255,255,0.2);padding:0;transition:.2s;line-height:1}
-        .color-tier-btn:hover{background:var(--accent);border-color:var(--accent);transform:scale(1.1)}
-        .tier-items{flex-grow:1;display:flex;flex-wrap:wrap;padding:4px 8px;gap:6px;align-content:flex-start}
-        .manga-item{width:var(--cover-w);height:calc(var(--cover-w) * 1.6);border-radius:var(--radius);cursor:grab;background:#111;display:flex;flex-direction:column;position:relative;box-shadow:0 2px 6px rgba(0,0,0,0.4);flex-shrink:0;transition:transform .1s;overflow:visible}
-        .manga-item:hover{transform:translateY(-2px);z-index:10}
-        .manga-item:active{cursor:grabbing;transform:scale(0.95)}
-        .manga-item img{width:100%;height:100%;object-fit:cover;pointer-events:none;border-radius:var(--radius)}
-        .manga-item::after{content:'';position:absolute;inset:0;background:transparent;transition:.1s;pointer-events:none;z-index:3;border-radius:var(--radius)}
-        .manga-item:hover::after{background:rgba(0,0,0,0.2)}
-        .manga-title{position:absolute;bottom:0;left:0;width:100%;background:rgba(0,0,0,var(--box-alpha));border-radius:0 0 var(--radius) var(--radius);height:auto;max-height:calc(100% - 8px);padding:4px 4px 8px;display:flex;align-items:center;justify-content:center;z-index:5;box-sizing:border-box;transition:opacity .1s;overflow:hidden}
-        .manga-title span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-overflow:ellipsis;font-size:calc(var(--cover-w) * 0.13);color:#fff;pointer-events:none;font-weight:700;line-height:1.25;padding-bottom:2px;text-shadow:0 1px 3px #000,0 0 5px #000,0 2px 8px rgba(0,0,0,0.8);text-align:center;white-space:normal}
-        body.hide-titles .manga-title{opacity:0}
-        body.hide-titles .manga-item:hover .manga-title{opacity:1}
-        .link-trigger{position:absolute;right:4px;top:4px;width:22px;height:22px;background:rgba(0,0,0,var(--box-alpha));border-radius:50%;display:flex;align-items:center;justify-content:center;opacity:0;transition:.1s;z-index:15;cursor:pointer;border:1px solid rgba(255,255,255,0.3)}
-        .manga-item:hover .link-trigger{opacity:1;z-index:20}
-        .link-trigger:hover{transform:scale(1.1);background:var(--accent);border-color:var(--accent);color:#000}
-        .anilist-link{color:inherit;text-decoration:none;display:flex;align-items:center;justify-content:center}
-        .badge{background:rgba(0,0,0,var(--box-alpha));color:#fff;font-size:calc(var(--cover-w) * 0.11);padding:2px 4px;border-radius:4px;pointer-events:none;font-weight:600;z-index:6;border:1px solid rgba(255,255,255,0.1)}
-        .chapter-badge{position:absolute;top:4px;left:4px;display:flex;gap:2px}
-        .badge-stack-right{position:absolute;top:4px;right:4px;display:flex;flex-direction:column;gap:4px;align-items:flex-end;z-index:6}
-        .status-circle{position:absolute;top:-5px;left:-5px;width:14px;height:14px;border-radius:50%;z-index:25;box-shadow:0 2px 4px rgba(0,0,0,0.5);border:none}
-        .status-RELEASING{background:#a9e06f}
-        .status-CANCELLED{background:#9e9e9e}
-        .heart-badge{position:absolute;top:-4px;right:-5px;color:#ff3232;font-size:16px;line-height:1;z-index:25;text-shadow:0 2px 4px rgba(0,0,0,0.5);cursor:pointer;opacity:0.3;transition:.2s;user-select:none}
-        .heart-badge.active{opacity:1}
-        .heart-badge:hover{transform:scale(1.2)}
-        .remove-item-btn{position:absolute;top:-6px;left:-6px;width:20px;height:20px;background:#ff4c4c;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;cursor:pointer;opacity:0;transition:.2s;z-index:30;border:1px solid rgba(255,255,255,0.4);box-shadow:0 2px 4px rgba(0,0,0,0.5)}
-        .manga-item:hover .remove-item-btn{opacity:1}
-        .remove-item-btn:hover{transform:scale(1.15);background:#ff1a1a}
-        body.hide-badges .year-badge,body.hide-score .score-badge,body.hide-mean .mean-badge,body.hide-pop .pop-badge,body.hide-status .status-circle,body.hide-progress .progress-text,body.hide-total .total-text,body.hide-progress.hide-total .chapter-badge,body.hide-hearts .heart-badge,body.hide-startdate .startdate-badge{display:none!important}
-        .hidden{display:none!important}
-        .manga-item.drag-left::before{content:'';position:absolute;left:-5px;top:0;bottom:0;width:4px;background:var(--accent);z-index:50;border-radius:4px;box-shadow:0 0 8px var(--accent)}
-        .manga-item.drag-right::before{content:'';position:absolute;right:-5px;top:0;bottom:0;width:4px;background:var(--accent);z-index:50;border-radius:4px;box-shadow:0 0 8px var(--accent)}
-        .glass-sidebar{position:fixed;top:0;right:calc(var(--sidebar-w) * -1);width:var(--sidebar-w);height:100vh;background:rgba(30,30,30,0.5);border-left:1px solid rgba(255,255,255,0.1);backdrop-filter:blur(24px) saturate(200%);-webkit-backdrop-filter:blur(24px) saturate(200%);box-shadow:-4px 0 32px rgba(0,0,0,0.4);z-index:10000;transition:right .3s cubic-bezier(0.4,0,0.2,1);display:flex;flex-direction:column;padding:20px;box-sizing:border-box}
-        .glass-sidebar.open{right:0}
-        .glass-sidebar:not(.open) #sidebar-resizer{display:none!important}
-        .sidebar-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:12px}
-        .sidebar-results{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));grid-auto-rows:105px;gap:12px;height:330px;overflow-y:auto;margin-top:12px;flex-shrink:0;padding-right:4px;padding-bottom:64px}
-        .sidebar-results:empty{display:none}
-        .sidebar-dragpool{flex:1;border:2px dashed rgba(255,255,255,0.2);border-radius:12px;overflow-y:auto;background:rgba(0,0,0,0.2);position:relative;padding:8px;display:flex;flex-direction:column;--cover-w:110px;min-height:0}
-        .sidebar-dragpool .tier-items{min-height:100%;align-content:flex-start;gap:6px;flex-grow:1}
-        .search-result-item{box-sizing:border-box}
-        .search-result-item:hover{transform:translateY(-2px);box-shadow:0 6px 12px rgba(0,0,0,0.5);filter:brightness(1.1)}
-        .search-result-item .hover-add-icon{opacity:0}
-        .search-result-item:hover .hover-add-icon{opacity:1}
-        .search-title-overlay{position:absolute;top:0;left:0;width:100%;background:rgba(0,0,0,0.85);color:#fff;padding:6px 4px;box-sizing:border-box;font-size:11px;font-weight:600;text-align:center;opacity:0;transform:translateY(-5px);transition:.2s;backdrop-filter:blur(4px);z-index:10}
-        .search-result-item:hover .search-title-overlay{opacity:1;transform:translateY(0)}
-        .exp-glass{background:var(--panel);border:1px solid var(--glass-border);backdrop-filter:blur(16px) saturate(180%);-webkit-backdrop-filter:blur(16px) saturate(180%);transition:background .3s ease}
-        .exp-action-btn{background:rgba(255,255,255,0.05);border:1px solid var(--glass-border);color:var(--highlight);padding:10px 20px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:8px;justify-content:center;height:38px;box-sizing:border-box}
-        .exp-action-btn:hover:not(:disabled){background:var(--accent);color:#000;border-color:var(--accent)}
-        .exp-action-btn.active{background:rgba(255,255,255,0.15);border-color:var(--accent);color:var(--accent)}
-        .exp-action-btn:disabled{opacity:0.4;cursor:not-allowed}
-        .exp-filter-dashboard{margin:24px 32px 0;padding:16px 24px;border-radius:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;transition:.3s}
-        .exp-filter-dashboard.hidden{display:none!important}
-        .exp-filter-group{display:flex;flex-direction:column;gap:8px}
-        .exp-filter-label{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin:0;display:block}
-        .exp-tag-cloud{display:flex;flex-wrap:wrap;gap:8px;padding:6px 0;min-height:38px;align-items:center}
-        .exp-main-container{padding:0 32px 32px;margin-top:24px}
-        .exp-grid-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
-        .exp-grid-title{font-size:18px;font-weight:700;color:var(--highlight);display:flex;align-items:center;gap:10px}
-        .exp-browser-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--exp-cover-w),1fr));gap:20px;background:var(--inner);padding:24px;border-radius:16px;border:1px solid var(--glass-border)}
-        .exp-card-link{text-decoration:none;color:inherit;display:block;outline:none;border-radius:var(--radius)}
-        .exp-media-card{display:flex;flex-direction:column;gap:8px;transition:transform .2s;cursor:pointer;height:100%}
-        .exp-card-link:hover .exp-media-card{transform:translateY(-4px)}
-        .exp-media-cover-container{position:relative;aspect-ratio:1 / 1.45;border-radius:var(--radius);box-shadow:0 4px 12px rgba(0,0,0,0.4);transition:box-shadow .2s}
-        .exp-card-link:hover .exp-media-cover-container{box-shadow:0 12px 28px rgba(0,0,0,0.8)}
-        .exp-media-cover-container img{width:100%;height:100%;object-fit:cover;display:block;border-radius:var(--radius)}
-        .exp-card-title-below{position:relative;font-size:13px;font-weight:700;color:var(--text);text-align:left;padding:0 2px;display:flex;align-items:flex-start;justify-content:space-between;margin-top:6px}
-        .exp-rank-number{flex-shrink:0;opacity:0.6;font-size:12px;margin-top:1px;margin-right:6px}
-        .exp-title-text{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;line-height:1.3;flex:1;padding-right:28px}
-        .exp-add-btn{position:absolute;right:0;top:0;margin-top:0;width:24px;height:24px;border-radius:50%;background:var(--accent);color:#000;display:flex;align-items:center;justify-content:center;opacity:0;transition:.2s;cursor:pointer;z-index:30;border:none;padding:0;box-shadow:0 2px 6px rgba(0,0,0,0.4)}
-        .exp-media-card:hover .exp-add-btn{opacity:1}
-        .exp-add-btn:hover{transform:scale(1.15)}
-        .exp-card-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.9) 0%,rgba(0,0,0,0.1) 40%,transparent 100%);display:flex;flex-direction:column;justify-content:flex-end;padding:12px;box-sizing:border-box;opacity:0;transition:opacity .2s;z-index:5;border-radius:var(--radius);pointer-events:none}
-        .exp-card-link:hover .exp-card-overlay{opacity:1}
-        .exp-card-genres{font-size:11px;color:#f3f4f6;font-weight:700;text-shadow:0 2px 4px rgba(0,0,0,0.9),0 0 2px #000;margin-top:2px}
-        .exp-top-left-floating{position:absolute;top:8px;left:8px;display:flex;flex-direction:column;gap:2px;z-index:20}
-        .exp-top-right-floating{position:absolute;top:8px;right:8px;display:flex;flex-direction:column;gap:2px;z-index:20;align-items:flex-end}
-        .exp-floating-text{font-size:13px;font-weight:800;line-height:1.2;color:#fff;text-shadow:0 2px 4px rgba(0,0,0,0.9),0 1px 2px rgba(0,0,0,0.8);pointer-events:none}
-        .exp-adult-text{color:#ff758f;font-size:11px;margin-top:2px}
-        .exp-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:999;backdrop-filter:blur(4px)}
-        .exp-tag-modal{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:800px;max-height:85vh;border-radius:16px;padding:0;z-index:1000;flex-direction:column;overflow:hidden}
-        .exp-modal-header{padding:20px 24px;border-bottom:1px solid rgba(255,255,255,0.1);background:rgba(20,20,20,0.9);display:flex;flex-direction:column;gap:12px}
-        .exp-modal-body{padding:20px 24px;overflow-y:auto;flex:1}
-        .exp-modal-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
-        .exp-modal-item{background:rgba(255,255,255,0.04);border:1px solid var(--glass-border);padding:8px 12px;border-radius:8px;font-size:11px;cursor:pointer;text-align:left;color:var(--text);transition:.2s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-        .exp-modal-item:hover{background:var(--accent);color:#000}
-        .exp-loading-view{grid-column:1 / -1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 0;color:var(--text-muted);gap:16px}
-        .exp-spinner{width:40px;height:40px;border:4px solid rgba(255,255,255,0.1);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite}
-        @keyframes spin{to{transform:rotate(360deg)}}
-        .graph-popup-modal{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg);border:1px solid var(--glass-border);box-shadow:var(--glass-shadow);border-radius:16px;padding:32px;z-index:11000;width:90vw;max-width:1100px;max-height:85vh;overflow-y:auto}
-        .graph-popup-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
-        .cal-nav-btn{background:none;border:none;color:var(--text);font-size:1.2rem;cursor:pointer;padding:5px;transition:.2s ease;display:flex;align-items:center;justify-content:center}
-        .cal-nav-btn:hover{color:var(--accent)}
-        .monthly-stats-banner{display:flex;flex-wrap:wrap;gap:20px;justify-content:center;align-items:center}
-        .stat-item{text-align:center}
-        .stat-value{font-size:1.4rem;font-weight:800;color:var(--highlight)}
-        .stat-value.chapters{color:#70b5f9}
-        .stat-value.titles,.stat-value.alltime{color:#fff}
-        .stat-value.started{color:#69f0ae}
-        .stat-value.finished{color:#b39ddb}
-        .stat-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.5px;margin-top:2px;color:var(--text-muted)}
-        .stats-divider{width:2px;height:35px;background:var(--glass-border);border-radius:2px;margin:0 10px}
-        .calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px;width:100%;max-width:1600px;margin:0 auto}
-        .weekday-header{text-align:center;font-weight:600;font-size:.8rem;text-transform:uppercase;color:var(--text-muted);padding-bottom:5px}
-        .day-column{border-radius:10px;display:flex;flex-direction:column;min-width:0;transition:border-color .2s ease,background .2s ease}
-        .day-column.has-entries{cursor:pointer}
-        .day-column.has-entries:hover{border-color:var(--accent);background:var(--inner)}
-        .day-column.empty{opacity:.5;cursor:default}
-        .day-column.future{background:rgba(0,0,0,0.2);border-color:transparent;opacity:.3}
-        .day-summary-header{padding:12px;display:flex;flex-direction:column;gap:8px;pointer-events:none}
-        .day-top-row{display:flex;justify-content:space-between;align-items:center}
-        .date-number{color:var(--highlight);font-size:1.2rem;font-weight:800;line-height:1}
-        .expand-icon{font-size:.8rem;color:var(--text-muted);transition:transform .3s ease}
-        .day-column.expanded .expand-icon{transform:rotate(180deg);color:var(--accent)}
-        .day-stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;font-size:.85rem;font-weight:700;pointer-events:auto;margin-top:4px}
-        .stat-badge{background:rgba(0,0,0,0.4);padding:6px 2px;border-radius:4px;display:flex;justify-content:center;align-items:center;position:relative;border:1px solid var(--glass-border);text-align:center}
-        .stat-badge.clickable{cursor:pointer;transition:background .2s}
-        .stat-badge.clickable:hover{background:rgba(255,255,255,0.1);border-color:var(--accent)}
-        .stat-badge.chapters span{color:#70b5f9}
-        .stat-badge.titles span{color:#fff}
-        .stat-badge.started span{color:#69f0ae}
-        .stat-badge.finished span{color:#b39ddb}
-        .entries-dropdown{display:none;padding:0 12px 12px;border-top:1px solid var(--glass-border);margin-top:4px;flex-direction:column;gap:6px;overflow-y:auto;max-height:500px;cursor:default}
-        .day-column.expanded .entries-dropdown{display:flex}
-        .entries-dropdown::-webkit-scrollbar{width:3px}
-        .entries-dropdown::-webkit-scrollbar-thumb{background:var(--glass-border);border-radius:4px}
-        .cal-entry-card{display:flex;align-items:center;gap:12px;background:rgba(0,0,0,0.3);padding:8px;border-radius:6px;min-width:0;margin-top:6px;position:relative;border:1px solid var(--glass-border)}
-        .cal-entry-card.clickable{cursor:pointer;transition:background .2s ease,transform .2s ease}
-        .cal-entry-card.clickable:hover{background:rgba(255,255,255,0.08);transform:translateX(4px);border-color:var(--accent)}
-        .cal-entry-cover-wrapper{position:relative;flex-shrink:0;display:flex}
-        .cal-entry-cover{width:60px;height:84px;object-fit:cover;border-radius:6px}
-        .cal-heart-icon{position:absolute;top:-8px;right:-8px;font-size:18px;text-shadow:0 2px 4px rgba(0,0,0,0.6);z-index:10;line-height:1;user-select:none}
-        .cal-entry-details{display:flex;flex-direction:column;min-width:0;flex-grow:1;align-items:flex-start}
-        .cal-entry-title{color:var(--highlight);font-size:.85rem;font-weight:600;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-overflow:ellipsis;max-width:100%;box-sizing:border-box;margin-bottom:4px}
-        .cal-entry-title.started{border:1px solid #69f0ae;padding:2px 6px;border-radius:4px}
-        .cal-entry-chapter{font-size:.8rem;color:var(--text-muted);margin-top:2px}
-        .cal-entry-chapter em{color:var(--accent);font-style:normal;font-weight:600}
-        .cal-entry-chapter.anime em{color:#ff80ab}
-        .cal-chart-container{max-width:1600px;margin:30px auto;border-radius:12px;padding:20px;height:350px;position:relative}
-        .cal-picker-month{padding:12px;border-radius:8px;border:1px solid var(--glass-border);background:rgba(0,0,0,0.4);cursor:pointer;transition:.2s;color:var(--text-muted);font-weight:600;text-align:center;position:relative}
-        .cal-picker-month[data-tooltip]:hover::after{opacity:1;transform:translateX(-50%) translateY(-4px)}
-        .cal-picker-month[data-tooltip]::after{content:attr(data-tooltip);position:absolute;bottom:100%;left:50%;transform:translateX(-50%) translateY(-8px);background:rgba(0,0,0,0.9);color:var(--highlight);padding:6px 10px;border-radius:6px;font-size:11px;white-space:nowrap;opacity:0;pointer-events:none;transition:.2s;border:1px solid var(--accent);z-index:100;box-shadow:0 4px 12px rgba(0,0,0,0.5);font-weight:bold}
-        .cal-picker-month:hover{border-color:var(--accent);color:var(--highlight)}
-        .cal-picker-month.has-data{background:rgba(255,255,255,0.1);color:var(--highlight);border-color:var(--accent)}
-        .cal-picker-month.current{background:var(--accent)!important;color:#00!important;border-color:var(--accent)}
-        .lb-clickable:hover{color:var(--accent)!important;cursor:pointer;text-decoration:underline}
-        .cal-entry-chapter.reread em{color:#b39ddb!important}
-        @media (max-width:900px){.calendar-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.weekday-header{display:none}}
-        @media (max-width:500px){.calendar-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.day-stats-grid{grid-template-columns:1fr}.stats-divider{display:none}.cal-chart-container{height:250px;padding:10px}}
-        .rec-matrix-grid{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(170px,1fr))!important;gap:26px!important;width:100%!important}
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>BLTiers v4.3.5</title>
+<link rel="icon" type="image/png" href="Normal.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#1c1d30;--panel:rgba(52,53,79,0.7);--inner:rgba(52,53,79,0.5);--text:#e3e5e8;--text-muted:#9fadbd;--highlight:#fff;--accent:#f39c12;--cover-w:75px;--exp-cover-w:160px;--radius:8px;--box-alpha:0.6;--glass-border:rgba(255,255,255,0.08);--glass-shadow:0 4px 16px 0 rgba(0,0,0,0.2);--sidebar-w:330px;color-scheme:dark}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;margin:0;padding:0;transition:background .3s,color .3s;min-height:100vh;overflow-x:hidden}
+.app-container{display:none}
+.app-container.active{display:block}
+.navbar{display:flex;justify-content:space-between;align-items:center;padding:0 24px;height:60px;position:sticky;top:0;z-index:100;background:rgba(30,30,30,0.4);border-bottom:1px solid rgba(255,255,255,0.1);backdrop-filter:blur(16px) saturate(180%);-webkit-backdrop-filter:blur(16px) saturate(180%);box-shadow:0 4px 30px rgba(0,0,0,0.1);box-sizing:border-box}
+.navbar-left,.navbar-right{display:flex;align-items:center;gap:12px;width:280px}
+.navbar-right{justify-content:flex-end;gap:10px}
+.nav-link{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;cursor:pointer;transition:.2s}
+.nav-link:hover{filter:brightness(1.2)}
+.navbar-logo-icon{font-size:26px;font-weight:bold;color:var(--accent);letter-spacing:1px;display:flex;gap:6px;cursor:pointer;position:relative;margin-right:4px;line-height:1}
+.braille-theme-select{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;appearance:none;-webkit-appearance:none;border:none;z-index:10}
+.nav-avatar{width:36px;height:36px;border-radius:50%;object-fit:cover;border:1px solid var(--glass-border);box-shadow:0 2px 8px rgba(0,0,0,0.3)}
+.nav-username{font-size:16px;font-weight:700;color:var(--highlight);letter-spacing:.3px}
+.navbar-center{display:flex;align-items:center;gap:12px;flex:1;justify-content:center}
+input[type="text"],input[type="number"],select,.panel-btn{appearance:none;background:rgba(0,0,0,0.4);border:1px solid var(--glass-border);color:var(--highlight);padding:0 16px;border-radius:18px;outline:none;font-size:14px;transition:.2s;height:36px;box-sizing:border-box}
+input[type="number"]{padding:0 12px;-moz-appearance:textfield}
+input[type="number"]::-webkit-outer-spin-button,input[type="number"]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+select{padding-right:32px;background-image:url('data:image/svg+xml;utf8,<svg fill="%239fadbd" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');background-repeat:no-repeat;background-position:right 10px center;background-size:14px;cursor:pointer}
+input:focus,select:focus{border-color:var(--accent);background:rgba(0,0,0,0.6)}
+select option{background:#1a1c23;color:#fff}
+#username,#exp-search-input,#cal-username{width:100%;box-sizing:border-box;height:36px!important}
+#username-container{width:240px}
+#media-type,#exp-media-type-sync{width:100px;cursor:pointer}
+.fetch-btn{background:rgba(0,0,0,0.4);color:var(--text);border:1px solid var(--glass-border);font-size:14px;font-weight:bold;cursor:pointer;padding:0 18px;height:36px;border-radius:18px;transition:.2s;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center}
+.fetch-btn:hover{background:var(--accent);color:#000;border-color:var(--accent)}
+.fetch-btn:active{transform:translateY(1px)}
+.icon-btn,.color-tier-btn{background:rgba(255,255,255,0.05);border:1px solid var(--glass-border);color:var(--highlight);cursor:pointer;width:36px;height:36px;min-width:36px;max-width:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:0;transition:.2s;overflow:hidden}
+.icon-btn:hover{background:var(--accent);color:var(--bg);border-color:var(--accent);transform:scale(1.05)}
+.icon-btn svg{width:18px;height:18px;pointer-events:none;}
+.glass{background:var(--panel);border:1px solid var(--glass-border);box-shadow:var(--glass-shadow);backdrop-filter:blur(8px) saturate(150%);-webkit-backdrop-filter:blur(8px) saturate(150%)}
+select.full-width{width:100%;border-radius:8px;padding:8px 12px;height:auto}
+button.action-btn,label.action-btn{background:rgba(0,0,0,0.4);border:1px solid var(--glass-border);color:var(--highlight);padding:8px 12px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:8px;box-sizing:border-box;margin:0}
+button.action-btn:hover:not(:disabled),label.action-btn:hover{background:rgba(255,255,255,0.1);border-color:var(--accent)}
+button.action-btn:disabled{opacity:0.4;cursor:not-allowed}
+.settings-panel{padding:24px;display:none;grid-template-columns:repeat(4,minmax(0,1fr));gap:24px;border-radius:0 0 16px 16px;margin:0 24px 24px;align-items:start;border-top:none}
+@media (max-width:1200px){.settings-panel{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:768px){.settings-panel{grid-template-columns:1fr}}
+.settings-panel.show{display:grid;animation:slideDown .1s ease-out}
+@keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.settings-group{display:flex;flex-direction:column;gap:12px}
+.settings-title{font-size:11px;font-weight:bold;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;transition:color .2s}
+.settings-title.clickable:hover{color:var(--accent);cursor:pointer}
+.settings-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.toggles-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;width:100%}
+label{display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;white-space:nowrap}
+input[type="checkbox"]{appearance:none;background:rgba(0,0,0,0.4);border:1px solid var(--glass-border);width:16px;height:16px;border-radius:4px;display:inline-flex;justify-content:center;align-items:center;cursor:pointer;transition:.2s}
+input[type="checkbox"]:checked{background:var(--accent);border-color:var(--accent)}
+input[type="checkbox"]:checked::after{content:'✓';color:#000;font-size:12px;font-weight:bold}
+input[type="range"]{cursor:pointer;width:100%;accent-color:var(--accent)}
+.workspace{padding:0 24px 24px 24px}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:16px;border-radius:12px;font-size:12px;margin-top:5px}
+.stats-grid div{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,0.05);padding-bottom:6px}
+.stats-grid div:nth-last-child(-n+2){border-bottom:none;padding-bottom:0}
+.chart-wrapper{display:flex;height:160px;align-items:flex-end;gap:6px;margin-top:10px;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:5px;overflow-x:auto;overflow-y:hidden}
+.chart-wrapper.enlarged{height:450px!important}
+.chart-bar-container{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;min-width:14px}
+.chart-bar{width:100%;background:var(--accent);border-radius:2px 2px 0 0;transition:height .3s ease-out;min-height:2px}
+.chart-val{font-size:10px;color:var(--highlight);margin-bottom:4px;font-weight:bold}
+.chart-label{font-size:10px;color:var(--text-muted);margin-top:6px;font-weight:600;white-space:nowrap}
+.color-swatch-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:6px;margin-top:6px}
+.color-swatch{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid rgba(255,255,255,0.1);transition:.2s}
+.color-swatch:hover{transform:scale(1.3);border-color:#fff;z-index:2;position:relative}
+.custom-color-btn{padding:8px 12px;font-size:12px;border:1px solid var(--glass-border);border-radius:8px;cursor:pointer;color:#fff;display:flex;justify-content:center;width:100%;font-weight:500;background:rgba(0,0,0,0.3);transition:.2s}
+.custom-color-btn:hover{border-color:var(--accent)}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:999;backdrop-filter:blur(4px)}
+.tier-modal{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg);border:1px solid var(--glass-border);box-shadow:var(--glass-shadow);border-radius:12px;padding:20px;z-index:1000;width:650px;max-height:80vh;overflow-y:auto}
+#tier-list-container{border-radius:var(--radius);display:flex;flex-direction:column;gap:6px;padding:32px;position:relative}
+.tier-row{display:flex;margin-bottom:0;border-radius:var(--radius);overflow:visible;min-height:calc(var(--cover-w) * 1.6);transition:background .3s}
+.tier-label{width:85px;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:rgba(0,0,0,0.8);text-align:center;outline:none;padding:4px 10px;flex-shrink:0;position:relative;text-shadow:0 1px 2px rgba(255,255,255,0.3);border-radius:var(--radius) 0 0 var(--radius)}
+body.tier-font-white .tier-label{color:#fff}
+body.tier-font-shadow .tier-label{text-shadow:0 2px 6px rgba(0,0,0,0.8)}
+body.tier-font-white:not(.tier-font-shadow) .tier-label{text-shadow:none}
+.tier-controls{position:absolute;top:4px;right:4px;opacity:0;transition:.2s;z-index:20;display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.tier-left-controls{position:absolute;top:6px;left:6px;opacity:0;transition:.2s;z-index:20}
+.tier-label:hover .tier-controls,.tier-label:hover .tier-left-controls{opacity:1}
+.tier-action-btn,.delete-tier{background:rgba(0,0,0,0.5);color:#fff;border-radius:4px;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;border:1px solid rgba(255,255,255,0.2);padding:0;transition:.2s;line-height:1}
+.tier-action-btn:hover,.delete-tier:hover{background:var(--accent);border-color:var(--accent);color:#000;transform:scale(1.1)}
+.delete-tier:hover{background:#ff4c4c;border-color:#ff4c4c;color:#fff}
+.color-tier-btn{background:rgba(0,0,0,0.5);color:#fff;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;border:1px solid rgba(255,255,255,0.2);padding:0;transition:.2s;line-height:1}
+.color-tier-btn:hover{background:var(--accent);border-color:var(--accent);transform:scale(1.1)}
+.tier-items{flex-grow:1;display:flex;flex-wrap:wrap;padding:4px 8px;gap:6px;align-content:flex-start}
+.manga-item{width:var(--cover-w);height:calc(var(--cover-w) * 1.6);border-radius:var(--radius);cursor:grab;background:#111;display:flex;flex-direction:column;position:relative;box-shadow:0 2px 6px rgba(0,0,0,0.4);flex-shrink:0;transition:transform .1s;overflow:visible}
+.manga-item:hover{transform:translateY(-2px);z-index:10}
+.manga-item:active{cursor:grabbing;transform:scale(0.95)}
+.manga-item img{width:100%;height:100%;object-fit:cover;pointer-events:none;border-radius:var(--radius)}
+.manga-item::after{content:'';position:absolute;inset:0;background:transparent;transition:.1s;pointer-events:none;z-index:3;border-radius:var(--radius)}
+.manga-item:hover::after{background:rgba(0,0,0,0.2)}
+.manga-title{position:absolute;bottom:0;left:0;width:100%;background:rgba(0,0,0,var(--box-alpha));border-radius:0 0 var(--radius) var(--radius);height:auto;max-height:calc(100% - 8px);padding:4px 4px 8px;display:flex;align-items:center;justify-content:center;z-index:5;box-sizing:border-box;transition:opacity .1s;overflow:hidden}
+.manga-title span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-overflow:ellipsis;font-size:calc(var(--cover-w) * 0.13);color:#fff;pointer-events:none;font-weight:700;line-height:1.25;padding-bottom:2px;text-shadow:0 1px 3px #000,0 0 5px #000,0 2px 8px rgba(0,0,0,0.8);text-align:center;white-space:normal}
+body.hide-titles .manga-title{opacity:0}
+body.hide-titles .manga-item:hover .manga-title{opacity:1}
+.link-trigger{position:absolute;right:4px;top:4px;width:22px;height:22px;background:rgba(0,0,0,var(--box-alpha));border-radius:50%;display:flex;align-items:center;justify-content:center;opacity:0;transition:.1s;z-index:15;cursor:pointer;border:1px solid rgba(255,255,255,0.3)}
+.manga-item:hover .link-trigger{opacity:1;z-index:20}
+.link-trigger:hover{transform:scale(1.1);background:var(--accent);border-color:var(--accent);color:#000}
+.anilist-link{color:inherit;text-decoration:none;display:flex;align-items:center;justify-content:center}
+.badge{background:rgba(0,0,0,var(--box-alpha));color:#fff;font-size:calc(var(--cover-w) * 0.11);padding:2px 4px;border-radius:4px;pointer-events:none;font-weight:600;z-index:6;border:1px solid rgba(255,255,255,0.1)}
+.chapter-badge{position:absolute;top:4px;left:4px;display:flex;gap:2px}
+.badge-stack-right{position:absolute;top:4px;right:4px;display:flex;flex-direction:column;gap:4px;align-items:flex-end;z-index:6}
+.status-circle{position:absolute;top:-5px;left:-5px;width:14px;height:14px;border-radius:50%;z-index:25;box-shadow:0 2px 4px rgba(0,0,0,0.5);border:none}
+.status-RELEASING{background:#a9e06f}
+.status-CANCELLED{background:#9e9e9e}
+.heart-badge{position:absolute;top:-4px;right:-5px;color:#ff3232;font-size:16px;line-height:1;z-index:25;text-shadow:0 2px 4px rgba(0,0,0,0.5);cursor:pointer;opacity:0.3;transition:.2s;user-select:none}
+.heart-badge.active{opacity:1}
+.heart-badge:hover{transform:scale(1.2)}
+.remove-item-btn{position:absolute;top:-6px;left:-6px;width:20px;height:20px;background:#ff4c4c;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;cursor:pointer;opacity:0;transition:.2s;z-index:30;border:1px solid rgba(255,255,255,0.4);box-shadow:0 2px 4px rgba(0,0,0,0.5)}
+.manga-item:hover .remove-item-btn{opacity:1}
+.remove-item-btn:hover{transform:scale(1.15);background:#ff1a1a}
+body.hide-badges .year-badge,body.hide-score .score-badge,body.hide-mean .mean-badge,body.hide-pop .pop-badge,body.hide-status .status-circle,body.hide-progress .progress-text,body.hide-total .total-text,body.hide-progress.hide-total .chapter-badge,body.hide-hearts .heart-badge,body.hide-startdate .startdate-badge{display:none!important}
+.hidden{display:none!important}
+.manga-item.drag-left::before{content:'';position:absolute;left:-5px;top:0;bottom:0;width:4px;background:var(--accent);z-index:50;border-radius:4px;box-shadow:0 0 8px var(--accent)}
+.manga-item.drag-right::before{content:'';position:absolute;right:-5px;top:0;bottom:0;width:4px;background:var(--accent);z-index:50;border-radius:4px;box-shadow:0 0 8px var(--accent)}
+.glass-sidebar{position:fixed;top:0;right:calc(var(--sidebar-w) * -1);width:var(--sidebar-w);height:100vh;background:rgba(30,30,30,0.5);border-left:1px solid rgba(255,255,255,0.1);backdrop-filter:blur(24px) saturate(200%);-webkit-backdrop-filter:blur(24px) saturate(200%);box-shadow:-4px 0 32px rgba(0,0,0,0.4);z-index:10000;transition:right .3s cubic-bezier(0.4,0,0.2,1);display:flex;flex-direction:column;padding:20px;box-sizing:border-box}
+.glass-sidebar.open{right:0}
+.glass-sidebar:not(.open) #sidebar-resizer{display:none!important}
+.sidebar-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:12px}
+.sidebar-results{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));grid-auto-rows:105px;gap:12px;height:330px;overflow-y:auto;margin-top:12px;flex-shrink:0;padding-right:4px;padding-bottom:64px}
+.sidebar-results:empty{display:none}
+.sidebar-dragpool{flex:1;border:2px dashed rgba(255,255,255,0.2);border-radius:12px;overflow-y:auto;background:rgba(0,0,0,0.2);position:relative;padding:8px;display:flex;flex-direction:column;--cover-w:110px;min-height:0}
+.sidebar-dragpool .tier-items{min-height:100%;align-content:flex-start;gap:6px;flex-grow:1}
+.search-result-item{box-sizing:border-box}
+.search-result-item:hover{transform:translateY(-2px);box-shadow:0 6px 12px rgba(0,0,0,0.5);filter:brightness(1.1)}
+.search-result-item .hover-add-icon{opacity:0}
+.search-result-item:hover .hover-add-icon{opacity:1}
+.search-title-overlay{position:absolute;top:0;left:0;width:100%;background:rgba(0,0,0,0.85);color:#fff;padding:6px 4px;box-sizing:border-box;font-size:11px;font-weight:600;text-align:center;opacity:0;transform:translateY(-5px);transition:.2s;backdrop-filter:blur(4px);z-index:10}
+.search-result-item:hover .search-title-overlay{opacity:1;transform:translateY(0)}
+.exp-glass{background:var(--panel);border:1px solid var(--glass-border);backdrop-filter:blur(16px) saturate(180%);-webkit-backdrop-filter:blur(16px) saturate(180%);transition:background .3s ease}
+.exp-action-btn{background:rgba(255,255,255,0.05);border:1px solid var(--glass-border);color:var(--highlight);padding:10px 20px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:8px;justify-content:center;height:38px;box-sizing:border-box}
+.exp-action-btn:hover:not(:disabled){background:var(--accent);color:#000;border-color:var(--accent)}
+.exp-action-btn.active{background:rgba(255,255,255,0.15);border-color:var(--accent);color:var(--accent)}
+.exp-action-btn:disabled{opacity:0.4;cursor:not-allowed}
+.exp-filter-dashboard{margin:24px 32px 0;padding:16px 24px;border-radius:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;transition:.3s}
+.exp-filter-dashboard.hidden{display:none!important}
+.exp-filter-group{display:flex;flex-direction:column;gap:8px}
+.exp-filter-label{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin:0;display:block}
+.exp-tag-cloud{display:flex;flex-wrap:wrap;gap:8px;padding:6px 0;min-height:38px;align-items:center}
+.exp-main-container{padding:0 32px 32px;margin-top:24px}
+.exp-grid-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.exp-grid-title{font-size:18px;font-weight:700;color:var(--highlight);display:flex;align-items:center;gap:10px}
+.exp-browser-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--exp-cover-w),1fr));gap:20px;background:var(--inner);padding:24px;border-radius:16px;border:1px solid var(--glass-border)}
+.exp-card-link{text-decoration:none;color:inherit;display:block;outline:none;border-radius:var(--radius)}
+.exp-media-card{display:flex;flex-direction:column;gap:8px;transition:transform .2s;cursor:pointer;height:100%}
+.exp-card-link:hover .exp-media-card{transform:translateY(-4px)}
+.exp-media-cover-container{position:relative;aspect-ratio:1 / 1.45;border-radius:var(--radius);box-shadow:0 4px 12px rgba(0,0,0,0.4);transition:box-shadow .2s}
+.exp-card-link:hover .exp-media-cover-container{box-shadow:0 12px 28px rgba(0,0,0,0.8)}
+.exp-media-cover-container img{width:100%;height:100%;object-fit:cover;display:block;border-radius:var(--radius)}
+.exp-card-title-below{position:relative;font-size:13px;font-weight:700;color:var(--text);text-align:left;padding:0 2px;display:flex;align-items:flex-start;justify-content:space-between;margin-top:6px}
+.exp-rank-number{flex-shrink:0;opacity:0.6;font-size:12px;margin-top:1px;margin-right:6px}
+.exp-title-text{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;line-height:1.3;flex:1;padding-right:28px}
+.exp-add-btn{position:absolute;right:0;top:0;margin-top:0;width:24px;height:24px;border-radius:50%;background:var(--accent);color:#000;display:flex;align-items:center;justify-content:center;opacity:0;transition:.2s;cursor:pointer;z-index:30;border:none;padding:0;box-shadow:0 2px 6px rgba(0,0,0,0.4)}
+.exp-media-card:hover .exp-add-btn{opacity:1}
+.exp-add-btn:hover{transform:scale(1.15)}
+.exp-card-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.9) 0%,rgba(0,0,0,0.1) 40%,transparent 100%);display:flex;flex-direction:column;justify-content:flex-end;padding:12px;box-sizing:border-box;opacity:0;transition:opacity .2s;z-index:5;border-radius:var(--radius);pointer-events:none}
+.exp-card-link:hover .exp-card-overlay{opacity:1}
+.exp-card-genres{font-size:11px;color:#f3f4f6;font-weight:700;text-shadow:0 2px 4px rgba(0,0,0,0.9),0 0 2px #000;margin-top:2px}
+.exp-top-left-floating{position:absolute;top:8px;left:8px;display:flex;flex-direction:column;gap:2px;z-index:20}
+.exp-top-right-floating{position:absolute;top:8px;right:8px;display:flex;flex-direction:column;gap:2px;z-index:20;align-items:flex-end}
+.exp-floating-text{font-size:13px;font-weight:800;line-height:1.2;color:#fff;text-shadow:0 2px 4px rgba(0,0,0,0.9),0 1px 2px rgba(0,0,0,0.8);pointer-events:none}
+.exp-adult-text{color:#ff758f;font-size:11px;margin-top:2px}
+.exp-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:999;backdrop-filter:blur(4px)}
+.exp-tag-modal{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:800px;max-height:85vh;border-radius:16px;padding:0;z-index:1000;flex-direction:column;overflow:hidden}
+.exp-modal-header{padding:20px 24px;border-bottom:1px solid rgba(255,255,255,0.1);background:rgba(20,20,20,0.9);display:flex;flex-direction:column;gap:12px}
+.exp-modal-body{padding:20px 24px;overflow-y:auto;flex:1}
+.exp-modal-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+.exp-modal-item{background:rgba(255,255,255,0.04);border:1px solid var(--glass-border);padding:8px 12px;border-radius:8px;font-size:11px;cursor:pointer;text-align:left;color:var(--text);transition:.2s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.exp-modal-item:hover{background:var(--accent);color:#000}
+.exp-loading-view{grid-column:1 / -1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 0;color:var(--text-muted);gap:16px}
+.exp-spinner{width:40px;height:40px;border:4px solid rgba(255,255,255,0.1);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.graph-popup-modal{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg);border:1px solid var(--glass-border);box-shadow:var(--glass-shadow);border-radius:16px;padding:32px;z-index:11000;width:90vw;max-width:1100px;max-height:85vh;overflow-y:auto}
+.graph-popup-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.cal-nav-btn{background:none;border:none;color:var(--text);font-size:1.2rem;cursor:pointer;padding:5px;transition:.2s ease;display:flex;align-items:center;justify-content:center}
+.cal-nav-btn:hover{color:var(--accent)}
+.monthly-stats-banner{display:flex;flex-wrap:wrap;gap:20px;justify-content:center;align-items:center}
+.stat-item{text-align:center}
+.stat-value{font-size:1.4rem;font-weight:800;color:var(--highlight)}
+.stat-value.chapters{color:#70b5f9}
+.stat-value.titles,.stat-value.alltime{color:#fff}
+.stat-value.started{color:#69f0ae}
+.stat-value.finished{color:#b39ddb}
+.stat-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.5px;margin-top:2px;color:var(--text-muted)}
+.stats-divider{width:2px;height:35px;background:var(--glass-border);border-radius:2px;margin:0 10px}
+.calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px;width:100%;max-width:1600px;margin:0 auto}
+.weekday-header{text-align:center;font-weight:600;font-size:.8rem;text-transform:uppercase;color:var(--text-muted);padding-bottom:5px}
+.day-column{border-radius:10px;display:flex;flex-direction:column;min-width:0;transition:border-color .2s ease,background .2s ease}
+.day-column.has-entries{cursor:pointer}
+.day-column.has-entries:hover{border-color:var(--accent);background:var(--inner)}
+.day-column.empty{opacity:.5;cursor:default}
+.day-column.future{background:rgba(0,0,0,0.2);border-color:transparent;opacity:.3}
+.day-summary-header{padding:12px;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.day-top-row{display:flex;justify-content:space-between;align-items:center}
+.date-number{color:var(--highlight);font-size:1.2rem;font-weight:800;line-height:1}
+.expand-icon{font-size:.8rem;color:var(--text-muted);transition:transform .3s ease}
+.day-column.expanded .expand-icon{transform:rotate(180deg);color:var(--accent)}
+.day-stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;font-size:.85rem;font-weight:700;pointer-events:auto;margin-top:4px}
+.stat-badge{background:rgba(0,0,0,0.4);padding:6px 2px;border-radius:4px;display:flex;justify-content:center;align-items:center;position:relative;border:1px solid var(--glass-border);text-align:center}
+.stat-badge.clickable{cursor:pointer;transition:background .2s}
+.stat-badge.clickable:hover{background:rgba(255,255,255,0.1);border-color:var(--accent)}
+.stat-badge.chapters span{color:#70b5f9}
+.stat-badge.titles span{color:#fff}
+.stat-badge.started span{color:#69f0ae}
+.stat-badge.finished span{color:#b39ddb}
+.entries-dropdown{display:none;padding:0 12px 12px;border-top:1px solid var(--glass-border);margin-top:4px;flex-direction:column;gap:6px;overflow-y:auto;max-height:500px;cursor:default}
+.day-column.expanded .entries-dropdown{display:flex}
+.entries-dropdown::-webkit-scrollbar{width:3px}
+.entries-dropdown::-webkit-scrollbar-thumb{background:var(--glass-border);border-radius:4px}
+.cal-entry-card{display:flex;align-items:center;gap:12px;background:rgba(0,0,0,0.3);padding:8px;border-radius:6px;min-width:0;margin-top:6px;position:relative;border:1px solid var(--glass-border)}
+.cal-entry-card.clickable{cursor:pointer;transition:background .2s ease,transform .2s ease}
+.cal-entry-card.clickable:hover{background:rgba(255,255,255,0.08);transform:translateX(4px);border-color:var(--accent)}
+.cal-entry-cover-wrapper{position:relative;flex-shrink:0;display:flex}
+.cal-entry-cover{width:60px;height:84px;object-fit:cover;border-radius:6px}
+.cal-heart-icon{position:absolute;top:-8px;right:-8px;font-size:18px;text-shadow:0 2px 4px rgba(0,0,0,0.6);z-index:10;line-height:1;user-select:none}
+.cal-entry-details{display:flex;flex-direction:column;min-width:0;flex-grow:1;align-items:flex-start}
+.cal-entry-title{color:var(--highlight);font-size:.85rem;font-weight:600;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-overflow:ellipsis;max-width:100%;box-sizing:border-box;margin-bottom:4px}
+.cal-entry-title.started{border:1px solid #69f0ae;padding:2px 6px;border-radius:4px}
+.cal-entry-chapter{font-size:.8rem;color:var(--text-muted);margin-top:2px}
+.cal-entry-chapter em{color:var(--accent);font-style:normal;font-weight:600}
+.cal-entry-chapter.anime em{color:#ff80ab}
+.cal-chart-container{max-width:1600px;margin:30px auto;border-radius:12px;padding:20px;height:350px;position:relative}
+.cal-picker-month{padding:12px;border-radius:8px;border:1px solid var(--glass-border);background:rgba(0,0,0,0.4);cursor:pointer;transition:.2s;color:var(--text-muted);font-weight:600;text-align:center;position:relative}
+.cal-picker-month[data-tooltip]:hover::after{opacity:1;transform:translateX(-50%) translateY(-4px)}
+.cal-picker-month[data-tooltip]::after{content:attr(data-tooltip);position:absolute;bottom:100%;left:50%;transform:translateX(-50%) translateY(-8px);background:rgba(0,0,0,0.9);color:var(--highlight);padding:6px 10px;border-radius:6px;font-size:11px;white-space:nowrap;opacity:0;pointer-events:none;transition:.2s;border:1px solid var(--accent);z-index:100;box-shadow:0 4px 12px rgba(0,0,0,0.5);font-weight:bold}
+.cal-picker-month:hover{border-color:var(--accent);color:var(--highlight)}
+.cal-picker-month.has-data{background:rgba(255,255,255,0.1);color:var(--highlight);border-color:var(--accent)}
+.cal-picker-month.current{background:var(--accent)!important;color:#00!important;border-color:var(--accent)}
+.lb-clickable:hover{color:var(--accent)!important;cursor:pointer;text-decoration:underline}
+.cal-entry-chapter.reread em{color:#b39ddb!important}
+@media (max-width:900px){.calendar-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.weekday-header{display:none}}
+@media (max-width:500px){.calendar-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.day-stats-grid{grid-template-columns:1fr}.stats-divider{display:none}.cal-chart-container{height:250px;padding:10px}}
+.rec-matrix-grid{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(170px,1fr))!important;gap:26px!important;width:100%!important}
+</style>
 </head>
 <body class="hide-titles hide-badges hide-progress hide-total hide-score hide-mean hide-pop hide-status hide-hearts hide-startdate">
 <div class="navbar no-export">
-    <div class="navbar-left">
-        <div class="navbar-logo-icon" title="Select Global Theme">
-            <span>⠁⠧⠑⠇</span>
-            <select id="shared-theme-selector" class="braille-theme-select" onchange="applyGlobalTheme(this.value)">
-                <option value="tako" selected="selected">Tako</option><option value="squib">Squib</option><option value="sakura">Sakura</option><option value="pickle">Pickle</option><option value="forest">Forest</option><option value="cn">CN</option><option value="pastel">Pastel</option><option value="peach">Peach</option><option value="catppuccin">Catppuccin</option><option value="nord">Nord</option><option value="strawberry">Daiquiri</option><option value="h4ck3r">h4ck3r</option><option value="chocolate_mint">Choco Mint</option>
-            </select>
-        </div>
-        <a id="nav-profile-link" href="https://anilist.co/user/Finavel" target="_blank" class="nav-link" style="margin-left:4px;">
-            <img id="nav-avatar" class="nav-avatar" src="https://s4.anilist.co/file/anilistcdn/user/avatar/large/default.png" alt="User"><span id="nav-username" class="nav-username">Finavel</span>
-        </a>
-    </div>
-    <div class="navbar-center" id="nav-center-tier" style="display: flex;">
-        <select id="media-type" onchange="$('exp-media-type-sync').value=this.value;updateTerminology();expSetMediaType(this.value);"><option value="MANGA" selected="selected">Manga</option><option value="ANIME">Anime</option></select>
-        <div id="username-container">
-            <input type="text" id="username" placeholder="Search AniList username..." value="Finavel" onclick="this.value=''">
-        </div>
-        <button id="fetch-btn" class="fetch-btn" onclick="fetchList()">Fetch List</button>
-    </div>
-    <div class="navbar-center" id="nav-center-exp" style="display: none; max-width: 650px; margin: 0px 20px;">
-        <select id="exp-media-type-sync" onchange="$('media-type').value=this.value;updateTerminology();expSetMediaType(this.value);" style="margin-right:8px;"><option value="MANGA" selected="selected">Manga</option><option value="ANIME">Anime</option></select>
-        <input type="text" id="exp-search-input" placeholder="Search specific series names..." oninput="expDebouncedSearch()" style="height:28px;border-radius:14px;">
-    </div>
-    <div class="navbar-center" id="nav-center-cal" style="display: none; max-width: 850px; margin: 0px 20px;">
-        <div style="display:flex;align-items:center;gap:8px;background:rgba(0,0,0,0.4);border:1px solid var(--glass-border);padding:0 8px;border-radius:18px;height:36px;">
-            <button class="cal-nav-btn" onclick="calPrevMonth()">◀</button>
-            <div id="cal-month-year-label" style="font-weight:700;font-size:14px;color:var(--highlight);min-width:110px;text-align:center;cursor:pointer;padding:0 4px;" onclick="calOpenMonthPicker(event)" title="Select Month Popup">June 2026</div>
-            <button class="cal-nav-btn" onclick="calNextMonth()">▶</button>
-        </div>
-        <input type="text" id="cal-username" placeholder="AniList User" value="Finavel" style="width:130px;margin:0 8px;" onclick="this.value=''">
-        <button id="cal-sync-btn" class="fetch-btn" onclick="calLoadAndRender()">Sync</button>
-        <button class="fetch-btn" style="margin-left:4px;" onclick="calInitiateExport()">Export</button>
-        <label class="fetch-btn" style="margin-left:4px;margin-bottom:0;cursor:pointer;line-height:34px;"><input type="file" accept=".json" multiple="" style="display:none;" onchange="calImportData(event)">Import</label>
-        <div style="position:relative; margin-left:12px; display:flex; align-items:center;">
-            <input type="text" id="cal-title-search" placeholder="Search series..." oninput="calDebouncedSearch()" style="width: 140px; height: 36px; border-radius: 18px; padding: 0 16px; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); color: var(--highlight);">
-            <div id="cal-search-results" style="display:none; position:absolute; top:100%; left:0; width:220px; max-height: 250px; overflow-y:auto; background: var(--bg); border: 1px solid var(--glass-border); border-radius: 8px; z-index: 1000; margin-top: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.8);"></div>
-        </div>
-        <div id="cal-adv-container" style="position:relative;margin-left:8px;display:flex;align-items:center;">
-            <button class="fetch-btn" style="padding:0 12px;height:36px;" onclick="calOpenAdvModal()" title="Database Stats"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M12 20V10M18 20V4M6 20v-4"></path></svg></button>
-        </div>
-    </div>
-    <div class="navbar-right">
-        <button class="icon-btn" title="Add Series (Drag Pool)" onclick="handleAddSeriesClick()">
-            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-        </button>
-        <button class="icon-btn" title="Export Image" onclick="handleExportClick()">
-            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-        </button>
-        <button class="icon-btn" title="Settings" onclick="handleSettingsClick()" style="font-size:18px;line-height:1;">⯎</button>
-        <button class="icon-btn" id="app-switcher-btn" onclick="toggleAppMode()" title="Switch App">
-            <svg id="icon-layer-stack" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 12 12 17 22 12"></polyline><polyline points="2 17 12 22 22 17"></polyline></svg>
-            <svg id="icon-book" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-            <svg id="icon-calendar" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-        </button>
-    </div>
+<div class="navbar-left">
+<div class="navbar-logo-icon" title="Select Global Theme">
+<span>⠁⠧⠑⠇</span>
+<select id="shared-theme-selector" class="braille-theme-select" onchange="applyGlobalTheme(this.value)">
+<option value="tako" selected="selected">Tako</option><option value="squib">Squib</option><option value="sakura">Sakura</option><option value="pickle">Pickle</option><option value="forest">Forest</option><option value="cn">CN</option><option value="pastel">Pastel</option><option value="peach">Peach</option><option value="catppuccin">Catppuccin</option><option value="nord">Nord</option><option value="strawberry">Daiquiri</option><option value="h4ck3r">h4ck3r</option><option value="chocolate_mint">Choco Mint</option>
+</select>
+</div>
+<a id="nav-profile-link" href="#" target="_blank" class="nav-link" style="margin-left:4px;">
+<img id="nav-avatar" class="nav-avatar" src="https://s4.anilist.co/file/anilistcdn/user/avatar/large/default.png" alt="User"><span id="nav-username" class="nav-username"></span>
+</a>
+</div>
+<div class="navbar-center" id="nav-center-tier">
+<select id="media-type" onchange="$('exp-media-type-sync').value=this.value;updateTerminology();expSetMediaType(this.value);">
+<option value="MANGA">Manga</option><option value="ANIME">Anime</option>
+</select>
+<div id="username-container">
+<input type="text" id="username" placeholder="Search AniList username..." value="Finavel" onclick="this.value=''">
+</div>
+<button id="fetch-btn" class="fetch-btn" onclick="fetchList()">Fetch List</button>
+</div>
+<div class="navbar-center" id="nav-center-exp" style="display:none;max-width:650px;margin:0 20px;">
+<select id="exp-media-type-sync" onchange="$('media-type').value=this.value;updateTerminology();expSetMediaType(this.value);" style="margin-right:8px;">
+<option value="MANGA">Manga</option><option value="ANIME">Anime</option>
+</select>
+<input type="text" id="exp-search-input" placeholder="Search specific series names..." oninput="expDebouncedSearch()" style="height:28px;border-radius:14px;">
+</div>
+<div class="navbar-center" id="nav-center-cal" style="display:none;max-width:850px;margin:0 20px;">
+<div style="display:flex;align-items:center;gap:8px;background:rgba(0,0,0,0.4);border:1px solid var(--glass-border);padding:0 8px;border-radius:18px;height:36px;">
+<button class="cal-nav-btn" onclick="calPrevMonth()">◀</button>
+<div id="cal-month-year-label" style="font-weight:700;font-size:14px;color:var(--highlight);min-width:110px;text-align:center;cursor:pointer;padding:0 4px;" onclick="calOpenMonthPicker(event)" title="Select Month Popup">June 2026</div>
+<button class="cal-nav-btn" onclick="calNextMonth()">▶</button>
+</div>
+<input type="text" id="cal-username" placeholder="AniList User" value="Finavel" style="width:130px;margin:0 8px;" onclick="this.value=''">
+<button id="cal-sync-btn" class="fetch-btn" onclick="calLoadAndRender()">Sync</button>
+<button class="fetch-btn" style="margin-left:4px;" onclick="calInitiateExport()">Export</button>
+<label class="fetch-btn" style="margin-left:4px;margin-bottom:0;cursor:pointer;line-height:34px;"><input type="file" accept=".json" multiple style="display:none;" onchange="calImportData(event)">Import</label>
+<div style="position:relative; margin-left:12px; display:flex; align-items:center;">
+<input type="text" id="cal-title-search" placeholder="Search series..." oninput="calDebouncedSearch()" style="width: 140px; height: 36px; border-radius: 18px; padding: 0 16px; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); color: var(--highlight);">
+<div id="cal-search-results" style="display:none; position:absolute; top:100%; left:0; width:220px; max-height: 250px; overflow-y:auto; background: var(--bg); border: 1px solid var(--glass-border); border-radius: 8px; z-index: 1000; margin-top: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.8);"></div>
+</div>
+<div id="cal-adv-container" style="position:relative;margin-left:8px;display:flex;align-items:center;">
+<button class="fetch-btn" style="padding:0 12px;height:36px;" onclick="calOpenAdvModal()" title="Database Stats"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M12 20V10M18 20V4M6 20v-4"></path></svg></button>
+</div>
+</div>
+<div class="navbar-right">
+<button class="icon-btn" title="Add Series (Drag Pool)" onclick="toggleSidebar()">
+<svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+</button>
+<button class="icon-btn" title="Export Image" onclick="handleExportClick()">
+<svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+</button>
+<button class="icon-btn" title="Settings" onclick="handleSettingsClick()" style="font-size:18px;line-height:1;">⯎</button>
+<button class="icon-btn" id="app-switcher-btn" onclick="toggleAppMode()" title="Switch App">
+<svg id="icon-layer-stack" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display:block;"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 12 12 17 22 12"></polyline><polyline points="2 17 12 22 22 17"></polyline></svg>
+<svg id="icon-book" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+<svg id="icon-calendar" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+</button>
+</div>
 </div>
 <div id="right-sidebar" class="glass-sidebar no-export">
-    <div id="sidebar-resizer" title="Drag to Resize" style="position:absolute;top:50%;left:-16px;width:16px;height:48px;background:rgba(30,30,30,0.6);border:1px solid rgba(255,255,255,0.1);border-right:none;border-radius:8px 0 0 8px;display:flex;align-items:center;justify-content:center;cursor:ew-resize;transform:translateY(-50%);z-index:1001;backdrop-filter:blur(8px);" onmousedown="initSidebarResize(event)"><svg viewBox="0 0 24 24" width="12" height="12" stroke="var(--text-muted)" stroke-width="2" fill="none"><line x1="8" y1="18" x2="8" y2="6"></line><line x1="16" y1="18" x2="16" y2="6"></line></svg></div>
-    <div class="sidebar-header">
-        <span style="font-weight:bold;color:var(--highlight);font-size:16px;display:flex;align-items:center;gap:8px;"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>Add Series</span>
-        <div style="display:flex;align-items:center;gap:12px;">
-            <label style="font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" id="nsfw-toggle" onchange="tierDebouncedSearch()">18+</label>
-            <button class="icon-btn" style="width:28px;height:28px;min-width:28px;border:none;cursor:pointer;" onclick="closeSidebar()" title="Close Sidebar"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" style="pointer-events:none;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
-        </div>
-    </div>
-    <div class="sidebar-search" style="display:flex;gap:8px;align-items:center;">
-        <div style="position:relative;flex:1;">
-            <input type="text" id="manual-search-input" placeholder="Search AniList to add..." style="width:100%;box-sizing:border-box;padding-right:32px;padding-left:16px;height:40px;" oninput="tierDebouncedSearch()">
-            <svg id="clear-search-icon" onclick="clearSearch()" viewBox="0 0 24 24" width="16" height="16" stroke="var(--text-muted)" stroke-width="2" fill="none" style="display:none;position:absolute;right:12px;top:12px;cursor:pointer;transition:.2s;" onmouseenter="this.style.stroke='var(--highlight)'" onmouseleave="this.style.stroke='var(--text-muted)'"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-        </div>
-        <button class="icon-btn" title="Move All to Drag Pool" onclick="confirmMoveToDragPool()" style="width:40px;height:40px;border-radius:8px;flex-shrink:0;"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></button>
-    </div>
-    <div id="manual-search-results" class="sidebar-results"></div>
-    <div id="tier-dragpool" class="tier-row sidebar-dragpool" style="margin-top:16px;">
-        <div class="tier-label" style="display:none;"><span>Drag Pool</span></div>
-        <div class="tier-items pool-container" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
-    </div>
+<div id="sidebar-resizer" title="Drag to Resize" style="position:absolute;top:50%;left:-16px;width:16px;height:48px;background:rgba(30,30,30,0.6);border:1px solid rgba(255,255,255,0.1);border-right:none;border-radius:8px 0 0 8px;display:flex;align-items:center;justify-content:center;cursor:ew-resize;transform:translateY(-50%);z-index:1001;backdrop-filter:blur(8px);" onmousedown="initSidebarResize(event)"><svg viewBox="0 0 24 24" width="12" height="12" stroke="var(--text-muted)" stroke-width="2" fill="none"><line x1="8" y1="18" x2="8" y2="6"></line><line x1="16" y1="18" x2="16" y2="6"></line></svg></div>
+<div class="sidebar-header">
+<span style="font-weight:bold;color:var(--highlight);font-size:16px;display:flex;align-items:center;gap:8px;"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>Add Series</span>
+<div style="display:flex;align-items:center;gap:12px;">
+<label style="font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" id="nsfw-toggle" onchange="tierDebouncedSearch()">18+</label>
+<button class="icon-btn" style="width:28px;height:28px;min-width:28px;border:none;cursor:pointer;" onclick="closeSidebar()" title="Close Sidebar"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" style="pointer-events:none;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+</div>
+</div>
+<div class="sidebar-search" style="display:flex;gap:8px;align-items:center;">
+<div style="position:relative;flex:1;">
+<input type="text" id="manual-search-input" placeholder="Search AniList to add..." style="width:100%;box-sizing:border-box;padding-right:32px;padding-left:16px;height:40px;" oninput="tierDebouncedSearch()">
+<svg id="clear-search-icon" onclick="clearSearch()" viewBox="0 0 24 24" width="16" height="16" stroke="var(--text-muted)" stroke-width="2" fill="none" style="display:none;position:absolute;right:12px;top:12px;cursor:pointer;transition:.2s;" onmouseenter="this.style.stroke='var(--highlight)'" onmouseleave="this.style.stroke='var(--text-muted)'"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+</div>
+<button class="icon-btn" title="Move All to Drag Pool" onclick="confirmMoveToDragPool()" style="width:40px;height:40px;border-radius:8px;flex-shrink:0;"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></button>
+</div>
+<div id="manual-search-results" class="sidebar-results"></div>
+<div id="tier-dragpool" class="tier-row sidebar-dragpool" style="margin-top:16px;">
+<div class="tier-label" style="display:none;"><span>Drag Pool</span></div>
+<div class="tier-items pool-container" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+</div>
 </div>
 <div id="tier-app" class="app-container active">
-    <div id="floating-color-picker" class="glass hidden no-export" style="position:absolute;padding:12px;border-radius:12px;z-index:2000;box-shadow:0 8px 32px rgba(0,0,0,0.8);">
-        <div class="gear-menu-title" style="color:var(--highlight);margin-bottom:8px;font-size:12px;font-weight:bold;">Select Tier Color</div>
-        <div id="floating-color-grid"></div>
-    </div>
-    <div class="modal-overlay" id="modal-overlay" onclick="closeTierModal()"></div>
-    <div class="tier-modal" id="tier-modal">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-            <span style="font-size:14px;font-weight:bold;color:var(--highlight);">Score Tier Config</span>
-            <button class="icon-btn" style="width:24px;height:24px;min-width:24px;background:transparent;border:none;" onclick="closeTierModal()"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-            <span style="font-size:11px;color:var(--text-muted);text-transform:uppercase;">Tier Rules</span>
-            <select id="tier-presets" onchange="loadTierPreset()" style="padding:4px 8px;font-size:11px;background:rgba(0,0,0,0.4);">
-                <option value="numbers" selected="selected">Preset: 10 to 1</option>
-                <option value="letters">Preset: S to E</option>
-                <option value="custom">Custom Config</option>
-            </select>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 30px;gap:4px;font-size:10px;color:var(--text-muted);padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,0.1);text-align:center;">
-            <div style="text-align:left;">Label</div><div>Min (≥)</div><div>Max (&lt;)</div><div></div>
-        </div>
-        <div id="tier-config-list" style="display:flex;flex-direction:column;gap:4px;margin-top:8px;"></div>
-        <div style="display:flex;gap:6px;margin-top:12px;">
-            <button class="action-btn" onclick="addTierConfigRow()" style="flex:1;padding:8px;font-size:12px;">+ Add Tier</button>
-            <button class="action-btn" onclick="applyTierConfig()" style="flex:1;padding:8px;font-size:12px;background:rgba(61,180,242,0.2);color:var(--accent);border-color:var(--accent);">Apply</button>
-        </div>
-    </div>
-    <div id="settings-panel" class="settings-panel show glass no-export">
-        <div class="settings-group">
-            <div class="settings-title clickable" onclick="toggleSection('org-wrapper', 'org-chevron')"><span>Organization</span><span id="org-chevron">▼</span></div>
-            <div id="org-wrapper" style="display: none; animation: 0.1s ease-out slideDown;">
-                <div class="settings-row"><select id="retier-mode" class="full-width" onchange="rebuildBoard()"><option value="myscore" selected="selected">Repopulate By: My Score</option><option value="meanscore">Repopulate By: Mean Score</option><option value="popularity">Repopulate By: Popularity</option><option value="releaseyear">Repopulate By: Release Year</option><option value="readmonth">Repopulate By: Read Month &amp; Year</option><option value="startyear">Repopulate By: Year Started</option><option value="lastupdated">Repopulate By: Last Updated</option><option value="manual" style="display:none;">Repopulate By: Custom Save</option></select></div>
-                <div class="settings-row"><select id="sort-filter" class="full-width" onchange="applySort()"><option value="none">Sort: Manual (Drag)</option><option value="score" selected="selected">Sort: My Score</option><option value="popularity">Sort: Popularity</option><option value="avgscore">Sort: Average Score</option><option value="meanscore">Sort: Mean Score</option><option value="releasedate">Sort: Release (Newest)</option></select></div>
-                <div class="settings-row"><select id="status-filter" class="full-width" onchange="applyFilters()"><option value="all" selected="selected">All Statuses</option><option value="FINISHED">Finished</option><option value="RELEASING">Releasing</option><option value="CANCELLED">Cancelled</option><option value="NOT_YET_RELEASED">Not Yet Released</option></select></div>
-                <div class="settings-row"><select id="tag-filter" class="full-width" onchange="applyFilters()"><option value="all" selected="selected">All Genres/Tags</option></select></div>
-                <div class="settings-row"><select id="list-filter" class="full-width" onchange="applyFilters()"><option value="all" selected="selected">All Lists</option></select></div>
-                <div class="settings-row"><select id="origin-filter" class="full-width" onchange="applyFilters()"><option value="all" selected="selected">All Origins</option><option value="JP">Japan</option><option value="KR">Korea</option><option value="CN">China/Taiwan</option></select></div>
-                <div class="settings-row" style="margin-top:8px;"><button class="action-btn" style="width:100%;" onclick="openTierModal()">Configure Score Tiers</button></div>
-                <div class="settings-row" style="margin-top:4px;"><button class="action-btn" style="width:100%;" onclick="clearEmptyTiers()">Clear Empty Tiers</button></div>
-                <div class="settings-row" style="margin-top:4px;"><button class="action-btn" style="width:100%;" onclick="saveProject()">Export List</button></div>
-                <div class="settings-row" style="margin-top:4px;"><label class="action-btn" style="width:100%;cursor:pointer;margin:0;"><input type="file" id="load-file" accept=".json" style="display:none" onchange="loadProject(event)">Import List</label></div>
-                <div class="settings-row" id="refresh-row" style="margin-top: 4px; display: none;"><button id="update-btn" class="action-btn" style="width:100%;" onclick="updateList()">Refresh List</button></div>
-            </div>
-        </div>
-        <div class="settings-group">
-            <div class="settings-title clickable" onclick="toggleSection('aes-wrapper', 'aes-chevron')"><span>Aesthetics</span><span id="aes-chevron">▼</span></div>
-            <div id="aes-wrapper" style="display:none;animation:slideDown .1s ease-out;">
-                <select id="global-theme" style="display:none;"></select>
-                <div class="settings-row" style="margin-bottom:12px;"><button class="action-btn" id="rec-btn" onclick="getRecommendation()" style="width:100%;">✧ Consult the Oracle</button></div>
-                <div class="settings-row"><select id="tier-palette" class="full-width" onchange="recolorTiers()"><option value="rainbow" selected="selected">Labels: Bright Rainbow</option><option value="pastel">Labels: Pastel</option><option value="cherryade">Labels: Cherryade</option><option value="sunset">Labels: Sunset</option><option value="ocean">Labels: Ocean</option><option value="spring">Labels: Spring</option><option value="summer">Labels: Summer</option><option value="autumn1">Labels: Autumn 1</option><option value="autumn2">Labels: Autumn 2</option><option value="winter">Labels: Winter</option><option value="sakura">Labels: Sakura</option><option value="choco_mint">Labels: Choco Mint</option><option value="vintage">Labels: Vintage</option><option value="pride_gay">Labels: Pride (Gay)</option><option value="pride_lesbian">Labels: Pride (Lesbian)</option><option value="pride_trans">Labels: Pride (Trans)</option><option value="pride_pan">Labels: Pride (Pan)</option><option value="pride_bi">Labels: Pride (Bi)</option><option value="pride_nb">Labels: Pride (Non-binary)</option></select></div>
-                <div class="settings-row" style="margin-top:4px;"><button class="action-btn" id="reverse-palette-btn" onclick="togglePaletteDirection()" style="width:100%;">Reverse Palette Order</button></div>
-                <div id="custom-palette-controls" style="display:none;position:relative;gap:8px;margin-top:10px;"><button id="bg-color-btn" class="custom-color-btn" onclick="toggleGlobalPicker('bg', event)">Background</button><button id="inner-color-btn" class="custom-color-btn" onclick="toggleGlobalPicker('inner', event)">Row Color</button><div id="global-color-picker" class="glass hidden" style="position:absolute;top:100%;left:0;padding:12px;border-radius:12px;z-index:100;margin-top:5px;"><div id="global-picker-title" style="color:var(--highlight);margin-bottom:8px;">Select Color</div></div></div>
-                <div class="settings-row" style="margin-top:10px;"><select id="title-lang" class="full-width" onchange="updateTitles()"><option value="english" selected="selected">English</option><option value="romaji">Romaji</option><option value="native">Native</option></select></div>
-                <div class="settings-row" style="margin-top:10px;width:100%;"><div style="font-size:12px;margin-bottom:4px;">Items per Row</div><input type="range" min="4" max="30" step="1" value="10" id="cover-size-slider" oninput="updateCoverSize()"></div>
-                <div class="settings-row" style="margin-top:5px;width:100%;"><div style="font-size:12px;margin-bottom:4px;">Box Opacity</div><input type="range" min="0" max="100" value="60" oninput="changeBoxOpacity(this.value)"></div>
-                <div class="settings-row" style="margin-top:5px;width:100%;"><div style="font-size:12px;margin-bottom:4px;">Global Corner Radius</div><input type="range" min="0" max="25" value="12" oninput="changeRadius(this.value)"></div>
-            </div>
-        </div>
-        <div class="settings-group">
-            <div class="settings-title clickable" onclick="toggleSection('tog-wrapper', 'tog-chevron')"><span>Display Toggles</span><span id="tog-chevron">▼</span></div>
-            <div id="tog-wrapper" style="display:none;animation:slideDown .1s ease-out;">
-                <div class="toggles-grid" style="grid-template-columns:repeat(3,1fr);">
-                    <label><input type="checkbox" id="toggle-titles" onchange="toggleClass('hide-titles', !this.checked)"> Title</label>
-                    <label><input type="checkbox" id="toggle-score" onchange="toggleClass('hide-score', !this.checked)"> Score</label>
-                    <label><input type="checkbox" id="toggle-status" onchange="toggleClass('hide-status', !this.checked)"> Status</label>
-                    <label><input type="checkbox" id="toggle-badges" onchange="toggleClass('hide-badges', !this.checked)"> Year</label>
-                    <label><input type="checkbox" id="toggle-pop" onchange="toggleClass('hide-pop', !this.checked)"> Popularity</label>
-                    <label><input type="checkbox" id="toggle-mean" onchange="toggleClass('hide-mean', !this.checked)"> Mean</label>
-                    <label><input type="checkbox" id="toggle-progress" onchange="toggleClass('hide-progress', !this.checked)"> Progress</label>
-                    <label><input type="checkbox" id="toggle-total" onchange="toggleClass('hide-total', !this.checked)"> Total</label>
-                    <label><input type="checkbox" id="toggle-startdate" onchange="toggleClass('hide-startdate', !this.checked)"> Start Date</label>
-                    <label><input type="checkbox" id="toggle-hearts" onchange="toggleClass('hide-hearts', !this.checked)"> Hearts</label>
-                    <label><input type="checkbox" id="toggle-tier-white" onchange="toggleClass('tier-font-white', this.checked)"> White Tier</label>
-                    <label><input type="checkbox" id="toggle-tier-shadow" onchange="toggleClass('tier-font-shadow', this.checked)"> Font Shadow</label>
-                </div>
-            </div>
-        </div>
-        <div class="settings-group">
-            <div class="settings-title clickable" onclick="toggleSection('stats-wrapper', 'stats-chevron')"><span>Library Stats</span><span id="stats-chevron">▼</span></div>
-            <div id="stats-wrapper" style="display:none;animation:slideDown .1s ease-out;">
-                <div class="stats-grid glass" id="stats-grid">
-                    <div><span>Total Series:</span><strong id="stat-total" style="color:var(--accent);">0</strong></div>
-                    <div><span>Completed:</span><strong id="stat-finished" style="color:#a3be8c;">0</strong></div>
-                    <div><span id="label-consumed">Chapters Read:</span><strong id="stat-progress" style="color:#d08770;">0</strong></div>
-                    <div><span>My Avg Score:</span><strong id="stat-myavg" style="color:#e27d60;">0.0</strong></div>
-                    <div><span>Global Mean:</span><strong id="stat-globalavg" style="color:#e27d60;">0.0</strong></div>
-                    <div><span>Standard Dev:</span><strong id="stat-stddev" style="color:#cba6f7;">0.00</strong></div>
-                </div>
-                <div class="settings-title clickable" style="margin-top:15px;" onclick="toggleSection('graphs-container', 'graphs-chevron')"><span>Visual Graphs</span><span id="graphs-chevron">▼</span></div>
-                <div id="graphs-container" class="glass" style="display:none;padding:16px;border-radius:12px;margin-top:5px;animation:slideDown .1s ease-out;">
-                    <select id="graph-type" class="full-width" onchange="updateGraphs()" style="margin-bottom:10px;"><option value="score">Score Dist (Titles)</option><option id="graph-units-opt" value="units">Score Dist (Chapters)</option><option value="decade">Decade Dist</option><option value="status">Status Dist</option></select>
-                    <div style="display:flex;justify-content:flex-end;margin-bottom:4px;"><button class="action-btn" style="padding:2px 8px;font-size:11px;" onclick="enlargeGraphPopup()">⛶ Expand Graph</button></div>
-                    <div id="native-chart" class="chart-wrapper"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="modal-overlay" id="graph-popup-overlay" onclick="$('graph-popup-modal').style.display='none';this.style.display='none';"></div>
-    <div class="graph-popup-modal exp-glass" id="graph-popup-modal">
-        <div class="graph-popup-header">
-            <span style="font-weight:700;font-size:18px;" id="graph-popup-title">Expanded Insights</span>
-            <button class="exp-action-btn" style="padding:4px 10px;border-radius:8px;" onclick="$('graph-popup-modal').style.display='none';$('graph-popup-overlay').style.display='none';">✕ Close</button>
-        </div>
-        <div id="popup-chart" class="chart-wrapper enlarged"></div>
-    </div>
-    <div class="workspace"><div id="tier-list-container"></div></div>
+<div id="floating-color-picker" class="glass hidden no-export" style="position:absolute;padding:12px;border-radius:12px;z-index:2000;box-shadow:0 8px 32px rgba(0,0,0,0.8);">
+<div class="gear-menu-title" style="color:var(--highlight);margin-bottom:8px;font-size:12px;font-weight:bold;">Select Tier Color</div>
+<div id="floating-color-grid"></div>
+</div>
+<div class="modal-overlay" id="modal-overlay" onclick="closeTierModal()"></div>
+<div class="tier-modal" id="tier-modal">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+<span style="font-size:14px;font-weight:bold;color:var(--highlight);">Score Tier Config</span>
+<button class="icon-btn" style="width:24px;height:24px;min-width:24px;background:transparent;border:none;" onclick="closeTierModal()"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+<span style="font-size:11px;color:var(--text-muted);text-transform:uppercase;">Tier Rules</span>
+<select id="tier-presets" onchange="loadTierPreset()" style="padding:4px 8px;font-size:11px;background:rgba(0,0,0,0.4);">
+<option value="numbers" selected>Preset: 10 to 1</option>
+<option value="letters">Preset: S to E</option>
+<option value="custom">Custom Config</option>
+</select>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr 30px;gap:4px;font-size:10px;color:var(--text-muted);padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,0.1);text-align:center;">
+<div style="text-align:left;">Label</div><div>Min (≥)</div><div>Max (&lt;)</div><div></div>
+</div>
+<div id="tier-config-list" style="display:flex;flex-direction:column;gap:4px;margin-top:8px;"></div>
+<div style="display:flex;gap:6px;margin-top:12px;">
+<button class="action-btn" onclick="addTierConfigRow()" style="flex:1;padding:8px;font-size:12px;">+ Add Tier</button>
+<button class="action-btn" onclick="applyTierConfig()" style="flex:1;padding:8px;font-size:12px;background:rgba(61,180,242,0.2);color:var(--accent);border-color:var(--accent);">Apply</button>
+</div>
+</div>
+<div id="settings-panel" class="settings-panel show glass no-export">
+<div class="settings-group">
+<div class="settings-title clickable" onclick="toggleSection('org-wrapper', 'org-chevron')"><span>Organization</span><span id="org-chevron">▼</span></div>
+<div id="org-wrapper" style="display:none;animation:slideDown .1s ease-out;">
+<div class="settings-row"><select id="retier-mode" class="full-width" onchange="rebuildBoard()"><option value="myscore" selected>Repopulate By: My Score</option><option value="meanscore">Repopulate By: Mean Score</option><option value="popularity">Repopulate By: Popularity</option><option value="releaseyear">Repopulate By: Release Year</option><option value="readmonth">Repopulate By: Read Month & Year</option><option value="startyear">Repopulate By: Year Started</option><option value="lastupdated">Repopulate By: Last Updated</option><option value="manual" style="display:none;">Repopulate By: Custom Save</option></select></div>
+<div class="settings-row"><select id="sort-filter" class="full-width" onchange="applySort()"><option value="none">Sort: Manual (Drag)</option><option value="score" selected>Sort: My Score</option><option value="popularity">Sort: Popularity</option><option value="avgscore">Sort: Average Score</option><option value="meanscore">Sort: Mean Score</option><option value="releasedate">Sort: Release (Newest)</option></select></div>
+<div class="settings-row"><select id="status-filter" class="full-width" onchange="applyFilters()"><option value="all">All Statuses</option><option value="FINISHED">Finished</option><option value="RELEASING">Releasing</option><option value="CANCELLED">Cancelled</option><option value="NOT_YET_RELEASED">Not Yet Released</option></select></div>
+<div class="settings-row"><select id="tag-filter" class="full-width" onchange="applyFilters()"><option value="all">All Genres/Tags</option></select></div>
+<div class="settings-row"><select id="list-filter" class="full-width" onchange="applyFilters()"><option value="all">All Lists</option></select></div>
+<div class="settings-row"><select id="origin-filter" class="full-width" onchange="applyFilters()"><option value="all">All Origins</option><option value="JP">Japan</option><option value="KR">Korea</option><option value="CN">China/Taiwan</option></select></div>
+<div class="settings-row" style="margin-top:8px;"><button class="action-btn" style="width:100%;" onclick="openTierModal()">Configure Score Tiers</button></div>
+<div class="settings-row" style="margin-top:4px;"><button class="action-btn" style="width:100%;" onclick="clearEmptyTiers()">Clear Empty Tiers</button></div>
+<div class="settings-row" style="margin-top:4px;"><button class="action-btn" style="width:100%;" onclick="saveProject()">Export List</button></div>
+<div class="settings-row" style="margin-top:4px;"><label class="action-btn" style="width:100%;cursor:pointer;margin:0;"><input type="file" id="load-file" accept=".json" style="display:none" onchange="loadProject(event)">Import List</label></div>
+<div class="settings-row" id="refresh-row" style="margin-top:4px;display:none;"><button id="update-btn" class="action-btn" style="width:100%;" onclick="updateList()">Refresh List</button></div>
+</div>
+</div>
+<div class="settings-group">
+<div class="settings-title clickable" onclick="toggleSection('aes-wrapper', 'aes-chevron')"><span>Aesthetics</span><span id="aes-chevron">▼</span></div>
+<div id="aes-wrapper" style="display:none;animation:slideDown .1s ease-out;">
+<select id="global-theme" style="display:none;"></select>
+<div class="settings-row" style="margin-bottom:12px;"><button class="action-btn" id="rec-btn" onclick="getRecommendation()" style="width:100%;">✧ Consult the Oracle</button></div>
+<div class="settings-row"><select id="tier-palette" class="full-width" onchange="recolorTiers()"><option value="rainbow" selected>Labels: Bright Rainbow</option><option value="pastel">Labels: Pastel</option><option value="cherryade">Labels: Cherryade</option><option value="sunset">Labels: Sunset</option><option value="ocean">Labels: Ocean</option><option value="spring">Labels: Spring</option><option value="summer">Labels: Summer</option><option value="autumn1">Labels: Autumn 1</option><option value="autumn2">Labels: Autumn 2</option><option value="winter">Labels: Winter</option><option value="sakura">Labels: Sakura</option><option value="choco_mint">Labels: Choco Mint</option><option value="vintage">Labels: Vintage</option><option value="pride_gay">Labels: Pride (Gay)</option><option value="pride_lesbian">Labels: Pride (Lesbian)</option><option value="pride_trans">Labels: Pride (Trans)</option><option value="pride_pan">Labels: Pride (Pan)</option><option value="pride_bi">Labels: Pride (Bi)</option><option value="pride_nb">Labels: Pride (Non-binary)</option></select></div>
+<div class="settings-row" style="margin-top:4px;"><button class="action-btn" id="reverse-palette-btn" onclick="togglePaletteDirection()" style="width:100%;">Reverse Palette Order</button></div>
+<div id="custom-palette-controls" style="display:none;position:relative;gap:8px;margin-top:10px;"><button id="bg-color-btn" class="custom-color-btn" onclick="toggleGlobalPicker('bg', event)">Background</button><button id="inner-color-btn" class="custom-color-btn" onclick="toggleGlobalPicker('inner', event)">Row Color</button><div id="global-color-picker" class="glass hidden" style="position:absolute;top:100%;left:0;padding:12px;border-radius:12px;z-index:100;margin-top:5px;"><div id="global-picker-title" style="color:var(--highlight);margin-bottom:8px;">Select Color</div></div></div>
+<div class="settings-row" style="margin-top:10px;"><select id="title-lang" class="full-width" onchange="updateTitles()"><option value="english" selected>English</option><option value="romaji">Romaji</option><option value="native">Native</option></select></div>
+<div class="settings-row" style="margin-top:10px;width:100%;"><div style="font-size:12px;margin-bottom:4px;">Items per Row</div><input type="range" min="4" max="30" step="1" value="10" id="cover-size-slider" oninput="updateCoverSize()"></div>
+<div class="settings-row" style="margin-top:5px;width:100%;"><div style="font-size:12px;margin-bottom:4px;">Box Opacity</div><input type="range" min="0" max="100" value="60" oninput="changeBoxOpacity(this.value)"></div>
+<div class="settings-row" style="margin-top:5px;width:100%;"><div style="font-size:12px;margin-bottom:4px;">Global Corner Radius</div><input type="range" min="0" max="25" value="12" oninput="changeRadius(this.value)"></div>
+</div>
+</div>
+<div class="settings-group">
+<div class="settings-title clickable" onclick="toggleSection('tog-wrapper', 'tog-chevron')"><span>Display Toggles</span><span id="tog-chevron">▼</span></div>
+<div id="tog-wrapper" style="display:none;animation:slideDown .1s ease-out;">
+<div class="toggles-grid" style="grid-template-columns:repeat(3,1fr);">
+<label><input type="checkbox" id="toggle-titles" onchange="toggleClass('hide-titles', !this.checked)"> Title</label>
+<label><input type="checkbox" id="toggle-score" onchange="toggleClass('hide-score', !this.checked)"> Score</label>
+<label><input type="checkbox" id="toggle-status" onchange="toggleClass('hide-status', !this.checked)"> Status</label>
+<label><input type="checkbox" id="toggle-badges" onchange="toggleClass('hide-badges', !this.checked)"> Year</label>
+<label><input type="checkbox" id="toggle-pop" onchange="toggleClass('hide-pop', !this.checked)"> Popularity</label>
+<label><input type="checkbox" id="toggle-mean" onchange="toggleClass('hide-mean', !this.checked)"> Mean</label>
+<label><input type="checkbox" id="toggle-progress" onchange="toggleClass('hide-progress', !this.checked)"> Progress</label>
+<label><input type="checkbox" id="toggle-total" onchange="toggleClass('hide-total', !this.checked)"> Total</label>
+<label><input type="checkbox" id="toggle-startdate" onchange="toggleClass('hide-startdate', !this.checked)"> Start Date</label>
+<label><input type="checkbox" id="toggle-hearts" onchange="toggleClass('hide-hearts', !this.checked)"> Hearts</label>
+<label><input type="checkbox" id="toggle-tier-white" onchange="toggleClass('tier-font-white', this.checked)"> White Tier</label>
+<label><input type="checkbox" id="toggle-tier-shadow" onchange="toggleClass('tier-font-shadow', this.checked)"> Font Shadow</label>
+</div>
+</div>
+</div>
+<div class="settings-group">
+<div class="settings-title clickable" onclick="toggleSection('stats-wrapper', 'stats-chevron')"><span>Library Stats</span><span id="stats-chevron">▼</span></div>
+<div id="stats-wrapper" style="display:none;animation:slideDown .1s ease-out;">
+<div class="stats-grid glass" id="stats-grid">
+<div><span>Total Series:</span><strong id="stat-total" style="color:var(--accent);">0</strong></div>
+<div><span>Completed:</span><strong id="stat-finished" style="color:#a3be8c;">0</strong></div>
+<div><span id="label-consumed">Chapters Read:</span><strong id="stat-progress" style="color:#d08770;">0</strong></div>
+<div><span>My Avg Score:</span><strong id="stat-myavg" style="color:#e27d60;">0.0</strong></div>
+<div><span>Global Mean:</span><strong id="stat-globalavg" style="color:#e27d60;">0.0</strong></div>
+<div><span>Standard Dev:</span><strong id="stat-stddev" style="color:#cba6f7;">0.00</strong></div>
+</div>
+<div class="settings-title clickable" style="margin-top:15px;" onclick="toggleSection('graphs-container', 'graphs-chevron')"><span>Visual Graphs</span><span id="graphs-chevron">▼</span></div>
+<div id="graphs-container" class="glass" style="display:none;padding:16px;border-radius:12px;margin-top:5px;animation:slideDown .1s ease-out;">
+<select id="graph-type" class="full-width" onchange="updateGraphs()" style="margin-bottom:10px;"><option value="score">Score Dist (Titles)</option><option id="graph-units-opt" value="units">Score Dist (Read)</option><option value="decade">Decade Dist</option><option value="status">Status Dist</option></select>
+<div style="display:flex;justify-content:flex-end;margin-bottom:4px;"><button class="action-btn" style="padding:2px 8px;font-size:11px;" onclick="enlargeGraphPopup()">⛶ Expand Graph</button></div>
+<div id="native-chart" class="chart-wrapper"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="modal-overlay" id="graph-popup-overlay" onclick="$('graph-popup-modal').style.display='none';this.style.display='none';"></div>
+<div class="graph-popup-modal exp-glass" id="graph-popup-modal">
+<div class="graph-popup-header">
+<span style="font-weight:700;font-size:18px;" id="graph-popup-title">Expanded Insights</span>
+<button class="exp-action-btn" style="padding:4px 10px;border-radius:8px;" onclick="$('graph-popup-modal').style.display='none';$('graph-popup-overlay').style.display='none';">✕ Close</button>
+</div>
+<div id="popup-chart" class="chart-wrapper enlarged"></div>
+</div>
+<div class="workspace"><div id="tier-list-container"></div></div>
 </div>
 <div id="explorer-app" class="app-container">
-    <div class="exp-filter-dashboard exp-glass" id="exp-settings-dash" style="display:grid;">
-        <div class="exp-filter-group"><span class="exp-filter-label">Sort Engine</span><select id="exp-sort-filter" onchange="expTriggerSearch()"><option value="MEAN_SCORE_DESC" selected>Mean Score</option><option value="SCORE_DESC">Average Score</option><option value="POPULARITY_DESC">Total Popularity</option><option value="TRENDING_DESC">Trending Now</option><option value="FAVOURITES_DESC">User Favorites</option><option value="UPDATED_AT_DESC">Recently Updated</option></select></div>
-        <div class="exp-filter-group"><span class="exp-filter-label">Format / Category</span><select id="exp-format-filter" onchange="expTriggerSearch()"><option value="all" selected>All Sub-Formats</option><option value="MANGA">Standard Manga</option><option value="ONE_SHOT">One-Shot</option><option value="NOVEL">Light Novel</option><option value="MANHWA">Manhwa</option><option value="MANHUA">Manhua</option></select></div>
-        <div class="exp-filter-group"><span class="exp-filter-label">Status</span><select id="exp-status-filter" onchange="expTriggerSearch()"><option value="all">All Statuses</option><option value="RELEASING">Ongoing</option><option value="FINISHED">Completed</option><option value="HIATUS">On Hiatus</option></select></div>
-    </div>
-    <div class="exp-main-container">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;width:100%;margin-left:8px;">
-            <div style="display:flex;align-items:center;gap:8px;">
-                <span class="exp-filter-label">Filter Tags</span>
-                <button class="exp-action-btn" style="padding:0;width:22px;height:22px;min-height:22px;border-radius:50%;background:transparent;border-color:var(--text-muted);color:var(--text-muted);" title="Add Tags" onclick="expOpenTagModal()"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display:block;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:8px;margin-right:32px;">
-                <div style="position:relative;"><button class="exp-action-btn" style="padding:6px 12px;font-size:11px;" onclick="expToggleSurpSlider('score')">Min Score: <span id="exp-surp-score-lbl">0%</span></button><div id="exp-surp-score-container" class="exp-glass" style="display:none;position:absolute;top:100%;left:0;padding:12px;border-radius:12px;z-index:50;margin-top:8px;width:200px;flex-direction:column;gap:8px;"><div style="font-size:11px;color:var(--text-muted);font-weight:bold;">Minimum Mean Score</div><input type="range" min="0" max="100" value="0" oninput="expUpdateSurpScore(this.value)" style="width:100%;accent-color:var(--accent);"></div></div>
-                <div style="position:relative;"><button class="exp-action-btn" style="padding:6px 12px;font-size:11px;" onclick="expToggleSurpSlider('pop')">Max Pop: <span id="exp-surp-pop-lbl">100k</span></button><div id="exp-surp-pop-container" class="exp-glass" style="display:none;position:absolute;top:100%;left:0;padding:12px;border-radius:12px;z-index:50;margin-top:8px;width:200px;flex-direction:column;gap:8px;"><div style="font-size:11px;color:var(--text-muted);font-weight:bold;">Maximum Popularity</div><input type="range" min="0" max="100" value="100" oninput="expUpdateSurpPop(this.value)" style="width:100%;accent-color:var(--accent);"></div></div>
-                <button class="exp-action-btn" style="padding:6px 12px;font-size:11px;color:var(--accent);border-color:var(--accent);" onclick="expSurpriseMe()">✧ Surprise Me!</button>
-            </div>
-        </div>
-        <div class="exp-tag-cloud" id="exp-active-tags-cloud" style="margin-left:8px;"><div style="font-size:12px;color:var(--text-muted);padding:4px 0;">No tag locks applied. Free-scrolling entire database.</div></div>
-        <div class="exp-grid-header" style="margin-left:8px;margin-right:24px;">
-            <div class="exp-grid-title" id="exp-grid-runtime-title">Global Indices</div>
-            <div style="display:flex;align-items:center;gap:16px;">
-                <label style="cursor:pointer;font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:6px;"><input type="checkbox" id="exp-sfw-toggle" checked onchange="expTriggerSearch()"> SFW</label>
-                <label style="cursor:pointer;font-size:13px;font-weight:600;color:#ff758f;display:flex;align-items:center;gap:6px;"><input type="checkbox" id="exp-nsfw-toggle" onchange="expTriggerSearch()"> 18+</label>
-                <button class="icon-btn" style="width:24px;height:24px;min-width:24px;border:none;margin-left:4px;padding:0;color:var(--accent);" title="Korean BL Preset" onclick="expLoadKoreaBL()"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72Z"></path><path d="m14 7 3 3"></path><path d="M5 6v4"></path><path d="M19 14v4"></path><path d="M10 2v2"></path><path d="M7 8H3"></path><path d="M21 16h-4"></path><path d="M11 3H9"></path></svg></button>
-            </div>
-        </div>
-        <div class="exp-browser-grid" id="exp-content-grid"></div>
-        <div id="exp-scroll-sentinel" class="exp-loading-view" style="display:none;margin-top:20px;"><div class="exp-spinner"></div><span>Fetching deeper indices...</span></div>
-    </div>
-    <div class="exp-modal-overlay" id="exp-modal-overlay" onclick="expCloseTagModal()"></div>
-    <div class="exp-tag-modal exp-glass" id="exp-tag-modal" style="display:none;">
-        <div class="exp-modal-header">
-            <div style="display:flex;justify-content:space-between;align-items:center;">
-                <span style="font-weight:700;font-size:16px;">Select Filters to Intersect</span>
-                <button class="exp-action-btn" style="padding:4px 10px;border-radius:8px;" onclick="expCloseTagModal()">✕</button>
-            </div>
-            <input type="text" id="exp-tag-search-input" placeholder="Search 150+ genres and tags..." oninput="expFilterModalTags()">
-        </div>
-        <div class="exp-modal-body">
-            <div class="exp-filter-label">Primary Genres</div>
-            <div class="exp-modal-grid" id="exp-modal-genre-grid"></div>
-            <div class="exp-filter-label" style="margin-top:24px;">Community Tags</div>
-            <div class="exp-modal-grid" id="exp-modal-tag-grid"></div>
-        </div>
-    </div>
-    <div class="exp-modal-overlay" id="exp-surp-modal-overlay" onclick="closeExpSurpModal()"></div>
-    <div class="exp-tag-modal exp-glass" id="exp-surp-modal" style="display:none;padding:36px;border-radius:24px;flex-direction:column;align-items:center;box-sizing:border-box;width:800px;max-width:90vw;max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,0.8);"></div>
+<div class="exp-filter-dashboard exp-glass" id="exp-settings-dash" style="display:grid;">
+<div class="exp-filter-group"><span class="exp-filter-label">Sort Engine</span><select id="exp-sort-filter" onchange="expTriggerSearch()"><option value="MEAN_SCORE_DESC" selected>Mean Score</option><option value="SCORE_DESC">Average Score</option><option value="POPULARITY_DESC">Total Popularity</option><option value="TRENDING_DESC">Trending Now</option><option value="FAVOURITES_DESC">User Favorites</option><option value="UPDATED_AT_DESC">Recently Updated</option></select></div>
+<div class="exp-filter-group"><span class="exp-filter-label">Format / Category</span><select id="exp-format-filter" onchange="expTriggerSearch()"><option value="all" selected>All Sub-Formats</option><option value="MANGA">Standard Manga</option><option value="ONE_SHOT">One-Shot</option><option value="NOVEL">Light Novel</option><option value="MANHWA">Manhwa</option><option value="MANHUA">Manhua</option></select></div>
+<div class="exp-filter-group"><span class="exp-filter-label">Status</span><select id="exp-status-filter" onchange="expTriggerSearch()"><option value="all">All Statuses</option><option value="RELEASING">Ongoing</option><option value="FINISHED">Completed</option><option value="HIATUS">On Hiatus</option></select></div>
+</div>
+<div class="exp-main-container">
+<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;width:100%;margin-left:8px;">
+<div style="display:flex;align-items:center;gap:8px;">
+<span class="exp-filter-label">Filter Tags</span>
+<button class="exp-action-btn" style="padding:0;width:22px;height:22px;min-height:22px;border-radius:50%;background:transparent;border-color:var(--text-muted);color:var(--text-muted);" title="Add Tags" onclick="expOpenTagModal()"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display:block;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
+</div>
+<div style="display:flex;align-items:flex-start;gap:8px;margin-right:32px;">
+<div style="position:relative;"><button class="exp-action-btn" style="padding:6px 12px;font-size:11px;" onclick="expToggleSurpSlider('score')">Min Score: <span id="exp-surp-score-lbl">0%</span></button><div id="exp-surp-score-container" class="exp-glass" style="display:none;position:absolute;top:100%;left:0;padding:12px;border-radius:12px;z-index:50;margin-top:8px;width:200px;flex-direction:column;gap:8px;"><div style="font-size:11px;color:var(--text-muted);font-weight:bold;">Minimum Mean Score</div><input type="range" min="0" max="100" value="0" oninput="expUpdateSurpScore(this.value)" style="width:100%;accent-color:var(--accent);"></div></div>
+<div style="position:relative;"><button class="exp-action-btn" style="padding:6px 12px;font-size:11px;" onclick="expToggleSurpSlider('pop')">Max Pop: <span id="exp-surp-pop-lbl">100k</span></button><div id="exp-surp-pop-container" class="exp-glass" style="display:none;position:absolute;top:100%;left:0;padding:12px;border-radius:12px;z-index:50;margin-top:8px;width:200px;flex-direction:column;gap:8px;"><div style="font-size:11px;color:var(--text-muted);font-weight:bold;">Maximum Popularity</div><input type="range" min="0" max="100" value="100" oninput="expUpdateSurpPop(this.value)" style="width:100%;accent-color:var(--accent);"></div></div>
+<button class="exp-action-btn" style="padding:6px 12px;font-size:11px;color:var(--accent);border-color:var(--accent);" onclick="expSurpriseMe()">✧ Surprise Me!</button>
+</div>
+</div>
+<div class="exp-tag-cloud" id="exp-active-tags-cloud" style="margin-left:8px;"><div style="font-size:12px;color:var(--text-muted);padding:4px 0;">No tag locks applied. Free-scrolling entire database.</div></div>
+<div class="exp-grid-header" style="margin-left:8px;margin-right:24px;">
+<div class="exp-grid-title" id="exp-grid-runtime-title">Global Indices</div>
+<div style="display:flex;align-items:center;gap:16px;">
+<label style="cursor:pointer;font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:6px;"><input type="checkbox" id="exp-sfw-toggle" checked onchange="expTriggerSearch()"> SFW</label>
+<label style="cursor:pointer;font-size:13px;font-weight:600;color:#ff758f;display:flex;align-items:center;gap:6px;"><input type="checkbox" id="exp-nsfw-toggle" onchange="expTriggerSearch()"> 18+</label>
+<button class="icon-btn" style="width:24px;height:24px;min-width:24px;border:none;margin-left:4px;padding:0;color:var(--accent);" title="Korean BL Preset" onclick="expLoadKoreaBL()"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72Z"></path><path d="m14 7 3 3"></path><path d="M5 6v4"></path><path d="M19 14v4"></path><path d="M10 2v2"></path><path d="M7 8H3"></path><path d="M21 16h-4"></path><path d="M11 3H9"></path></svg></button>
+</div>
+</div>
+<div class="exp-browser-grid" id="exp-content-grid"></div>
+<div id="exp-scroll-sentinel" class="exp-loading-view" style="display:none;margin-top:20px;"><div class="exp-spinner"></div><span>Fetching deeper indices...</span></div>
+</div>
+<div class="exp-modal-overlay" id="exp-modal-overlay" onclick="expCloseTagModal()"></div>
+<div class="exp-tag-modal exp-glass" id="exp-tag-modal" style="display:none;">
+<div class="exp-modal-header">
+<div style="display:flex;justify-content:space-between;align-items:center;">
+<span style="font-weight:700;font-size:16px;">Select Filters to Intersect</span>
+<button class="exp-action-btn" style="padding:4px 10px;border-radius:8px;" onclick="expCloseTagModal()">✕</button>
+</div>
+<input type="text" id="exp-tag-search-input" placeholder="Search 150+ genres and tags..." oninput="expFilterModalTags()">
+</div>
+<div class="exp-modal-body">
+<div class="exp-filter-label">Primary Genres</div>
+<div class="exp-modal-grid" id="exp-modal-genre-grid"></div>
+<div class="exp-filter-label" style="margin-top:24px;">Community Tags</div>
+<div class="exp-modal-grid" id="exp-modal-tag-grid"></div>
+</div>
+</div>
+<div class="exp-modal-overlay" id="exp-surp-modal-overlay" onclick="closeExpSurpModal()"></div>
+<div class="exp-tag-modal exp-glass" id="exp-surp-modal" style="display:none;padding:36px;border-radius:24px;flex-direction:column;align-items:center;box-sizing:border-box;width:800px;max-width:90vw;max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,0.8);"></div>
 </div>
 <div id="rec-overlay" style="display:none;position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,0.75);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);" onclick="$('rec-container').style.display='none';this.style.display='none';"></div>
 <div id="rec-container" class="glass" style="display:none;padding:46px;border-radius:30px;flex-direction:column;align-items:center;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9999;width:1040px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:0 30px 80px rgba(0,0,0,0.8);background:rgba(30,30,40,0.65);backdrop-filter:blur(24px) saturate(150%);-webkit-backdrop-filter:blur(24px) saturate(150%);border:1px solid rgba(255,255,255,0.15);">
-    <div style="width:100%;display:flex;justify-content:flex-end;margin-bottom:-20px;z-index:10;"><button class="action-btn" style="padding:12px 16px;font-size:18px;border-radius:12px;" onclick="this.parentElement.parentElement.style.display='none';$('rec-overlay').style.display='none';">✕</button></div>
-    <div id="rec-reason" style="font-size:22px;margin-bottom:16px;text-align:center;font-weight:bold;color:var(--text-muted);".></div>
-    <a id="rec-link" href="#" target="_blank" class="rec-manga-item" style="position:relative;height:55vh;aspect-ratio:1/1.6;border-radius:16px;display:block;box-shadow:0 12px 32px rgba(0,0,0,0.8);overflow:hidden;text-decoration:none;">
-        <img id="rec-img" src="" crossorigin="anonymous" style="width:100%;height:100%;object-fit:cover;">
-        <div id="rec-status" class="status-circle" style="display:none;width:32px;height:32px;top:10px;left:10px;"></div>
-        <div class="badge-stack-right" id="rec-badge-stack" style="gap:8px;top:12px;right:12px;align-items:flex-end;"></div>
-    </a>
-    <div id="rec-title" style="color:var(--highlight);font-weight:900;font-size:36px;margin-top:24px;text-align:center;text-shadow:0 2px 6px rgba(0,0,0,0.8);"></div>
+<div style="width:100%;display:flex;justify-content:flex-end;margin-bottom:-20px;z-index:10;"><button class="action-btn" style="padding:12px 16px;font-size:18px;border-radius:12px;" onclick="this.parentElement.parentElement.style.display='none';$('rec-overlay').style.display='none';">✕</button></div>
+<div id="rec-reason" style="font-size:22px;margin-bottom:16px;text-align:center;font-weight:bold;color:var(--text-muted);".></div>
+<a id="rec-link" href="#" target="_blank" class="rec-manga-item" style="position:relative;height:55vh;aspect-ratio:1/1.6;border-radius:16px;display:block;box-shadow:0 12px 32px rgba(0,0,0,0.8);overflow:hidden;text-decoration:none;">
+<img id="rec-img" src="" crossorigin="anonymous" style="width:100%;height:100%;object-fit:cover;">
+<div id="rec-status" class="status-circle" style="display:none;width:32px;height:32px;top:10px;left:10px;"></div>
+<div class="badge-stack-right" id="rec-badge-stack" style="gap:8px;top:12px;right:12px;align-items:flex-end;"></div>
+</a>
+<div id="rec-title" style="color:var(--highlight);font-weight:900;font-size:36px;margin-top:24px;text-align:center;text-shadow:0 2px 6px rgba(0,0,0,0.8);"></div>
 </div>
 <div id="calendar-app" class="app-container">
-    <div class="workspace" style="padding-top:24px;">
-        <div id="cal-status-message" style="text-align:center;color:var(--accent);font-size:12px;font-weight:bold;height:16px;margin-bottom:10px;"></div>
-        <div class="monthly-stats-banner glass" style="margin-bottom:24px;padding:16px;border-radius:12px;">
-            <div class="stat-item"><div class="stat-value chapters" id="cal-total-chapters">0</div><div class="stat-label">Chapters</div></div>
-            <div class="stat-item"><div class="stat-value titles" id="cal-total-titles">0</div><div class="stat-label">Titles Read</div></div>
-            <div class="stat-item"><div class="stat-value started" id="cal-total-started">0</div><div class="stat-label">Started</div></div>
-            <div class="stat-item"><div class="stat-value finished" id="cal-total-finished">0</div><div class="stat-label">Finished</div></div>
-            <div class="stats-divider"></div>
-            <div class="stat-item"><div class="stat-value alltime" id="cal-alltime-chapters">0</div><div class="stat-label">Total Chs</div></div>
-            <div class="stat-item"><div class="stat-value alltime" id="cal-alltime-titles">0</div><div class="stat-label">Total Titles</div></div>
-        </div>
-        <div class="calendar-grid" id="cal-grid"></div>
-        <div class="cal-chart-container glass" style="margin-top:24px;"><canvas id="calActivityChart"></canvas></div>
-        <div class="cal-chart-container glass" style="margin-top:24px;margin-bottom:40px;"><canvas id="calMonthlyChart"></canvas></div>
-    </div>
+<div class="workspace" style="padding-top:24px;">
+<div id="cal-status-message" style="text-align:center;color:var(--accent);font-size:12px;font-weight:bold;height:16px;margin-bottom:10px;"></div>
+<div class="monthly-stats-banner glass" style="margin-bottom:24px;padding:16px;border-radius:12px;">
+<div class="stat-item"><div class="stat-value chapters" id="cal-total-chapters">0</div><div class="stat-label">Chapters</div></div>
+<div class="stat-item"><div class="stat-value titles" id="cal-total-titles">0</div><div class="stat-label">Titles Read</div></div>
+<div class="stat-item"><div class="stat-value started" id="cal-total-started">0</div><div class="stat-label">Started</div></div>
+<div class="stat-item"><div class="stat-value finished" id="cal-total-finished">0</div><div class="stat-label">Finished</div></div>
+<div class="stats-divider"></div>
+<div class="stat-item"><div class="stat-value alltime" id="cal-alltime-chapters">0</div><div class="stat-label">Total Chs</div></div>
+<div class="stat-item"><div class="stat-value alltime" id="cal-alltime-titles">0</div><div class="stat-label">Total Titles</div></div>
+</div>
+<div class="calendar-grid" id="cal-grid"></div>
+<div class="cal-chart-container glass" style="margin-top:24px;"><canvas id="calActivityChart"></canvas></div>
+<div class="cal-chart-container glass" style="margin-top:24px;margin-bottom:40px;"><canvas id="calMonthlyChart"></canvas></div>
+</div>
 </div>
 <div class="modal-overlay" id="cal-month-picker-overlay" style="display:none;z-index:12000;" onclick="calCloseMonthPicker()"></div>
 <div class="tier-modal glass" id="cal-month-picker-modal" style="display:none;width:320px;padding:24px;text-align:center;border-radius:16px;z-index:12001;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-        <button class="cal-nav-btn" style="background:rgba(0,0,0,0.4);border-radius:8px;padding:4px 12px;" onclick="calPickerPrevYear()">◀</button>
-        <span id="cal-picker-year" style="font-size:18px;font-weight:bold;color:var(--highlight);">2026</span>
-        <button class="cal-nav-btn" style="background:rgba(0,0,0,0.4);border-radius:8px;padding:4px 12px;" onclick="calPickerNextYear()">▶</button>
-    </div>
-    <div id="cal-picker-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;"></div>
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+<button class="cal-nav-btn" style="background:rgba(0,0,0,0.4);border-radius:8px;padding:4px 12px;" onclick="calPickerPrevYear()">◀</button>
+<span id="cal-picker-year" style="font-size:18px;font-weight:bold;color:var(--highlight);">2026</span>
+<button class="cal-nav-btn" style="background:rgba(0,0,0,0.4);border-radius:8px;padding:4px 12px;" onclick="calPickerNextYear()">▶</button>
+</div>
+<div id="cal-picker-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;"></div>
 </div>
 <div class="modal-overlay" id="cal-history-overlay" style="display:none;z-index:12000;" onclick="calCloseHistory()"></div>
 <div class="tier-modal glass" id="cal-history-modal" style="display:none; width: 420px; max-height: 75vh; overflow-y: auto; z-index: 12001; padding: 24px;">
-    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; gap: 12px;">
-        <span id="cal-history-title" style="font-size:18px; font-weight:800; color:var(--highlight); line-height: 1.2;">Series History</span>
-        <button class="cal-nav-btn" style="background:rgba(0,0,0,0.4); border-radius:8px; padding:6px 12px; flex-shrink: 0;" onclick="calCloseHistory()">✕</button>
-    </div>
-    <div id="cal-history-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+<div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; gap: 12px;">
+<span id="cal-history-title" style="font-size:18px; font-weight:800; color:var(--highlight); line-height: 1.2;">Series History</span>
+<button class="cal-nav-btn" style="background:rgba(0,0,0,0.4); border-radius:8px; padding:6px 12px; flex-shrink: 0;" onclick="calCloseHistory()">✕</button>
+</div>
+<div id="cal-history-list" style="display:flex; flex-direction:column; gap:8px;"></div>
 </div>
 <div class="modal-overlay" id="cal-adv-overlay" style="display:none;z-index:12000;" onclick="calCloseAdvModal()"></div>
 <div class="tier-modal glass" id="cal-adv-modal" style="display:none; width: 900px; max-width: 95vw; max-height: 85vh; overflow-y: auto; z-index: 12001; padding: 24px;">
-    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; gap: 12px;">
-        <span style="font-size:18px; font-weight:800; color:var(--highlight);">Database Stats & Leaderboards</span>
-        <button class="cal-nav-btn" style="background:rgba(0,0,0,0.4); border-radius:8px; padding:6px 12px;" onclick="calCloseAdvModal()">✕</button>
-    </div>
-    <div style="display:flex; gap:16px; margin-bottom: 24px;">
-        <div style="flex:1; background:rgba(0,0,0,0.3); padding:16px; border-radius:12px; border:1px solid var(--glass-border);">
-            <div style="font-size:11px; font-weight:bold; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px;">Database Memory</div>
-            <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:8px;">
-                <div style="text-align:center;"><div style="font-size:18px; font-weight:bold; color:#70b5f9;" id="cal-adv-g-chap">0</div><div style="font-size:10px; color:var(--text-muted);">Chapters</div></div>
-                <div style="text-align:center;"><div style="font-size:18px; font-weight:bold; color:#fff;" id="cal-adv-g-tit">0</div><div style="font-size:10px; color:var(--text-muted);">Titles Read</div></div>
-                <div style="text-align:center;"><div style="font-size:18px; font-weight:bold; color:#69f0ae;" id="cal-adv-g-start">0</div><div style="font-size:10px; color:var(--text-muted);">Started</div></div>
-                <div style="text-align:center;"><div style="font-size:18px; font-weight:bold; color:#b39ddb;" id="cal-adv-g-fin">0</div><div style="font-size:10px; color:var(--text-muted);">Finished</div></div>
-            </div>
-        </div>
-        <div style="flex:1; background:rgba(0,0,0,0.3); padding:16px; border-radius:12px; border:1px solid var(--glass-border);">
-            <div id="cal-adv-y-label" style="font-size:11px; font-weight:bold; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px;">Current Year Stats</div>
-            <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:8px;">
-                <div style="text-align:center;"><div style="font-size:18px; font-weight:bold; color:#70b5f9;" id="cal-adv-y-chap">0</div><div style="font-size:10px; color:var(--text-muted);">Chapters</div></div>
-                <div style="text-align:center;"><div style="font-size:18px; font-weight:bold; color:#fff;" id="cal-adv-y-tit">0</div><div style="font-size:10px; color:var(--text-muted);">Titles Read</div></div>
-                <div style="text-align:center;"><div style="font-size:18px; font-weight:bold; color:#69f0ae;" id="cal-adv-y-start">0</div><div style="font-size:10px; color:var(--text-muted);">Started</div></div>
-                <div style="text-align:center;"><div style="font-size:18px; font-weight:bold; color:#b39ddb;" id="cal-adv-y-fin">0</div><div style="font-size:10px; color:var(--text-muted);">Finished</div></div>
-            </div>
-        </div>
-    </div>
-    <div style="display:flex; justify-content:center; gap:8px; margin-bottom:16px;">
-        <button class="fetch-btn" id="cal-lb-btn-chapters" onclick="calSetLbMode('chapters')" style="background:var(--accent); color:#000; border-color:var(--accent);">Chapters Read</button>
-        <button class="fetch-btn" id="cal-lb-btn-started" onclick="calSetLbMode('started')">Titles Started</button>
-        <button class="fetch-btn" id="cal-lb-btn-finished" onclick="calSetLbMode('finished')">Titles Finished</button>
-    </div>
-    <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:12px;" id="cal-lb-grid-container">
-        <div style="background:rgba(0,0,0,0.3); border-radius:8px; border:1px solid var(--glass-border); display:flex; flex-direction:column; overflow:hidden;">
-            <div style="background:rgba(255,255,255,0.05); padding:8px; font-size:12px; font-weight:bold; text-align:center;" id="cal-lb-streaks-title">Top Streaks</div>
-            <div id="cal-lb-streaks-list" style="flex:1; padding:8px; min-height:200px;"></div>
-            <div style="display:flex; justify-content:space-between; padding:4px; background:rgba(0,0,0,0.4);">
-                <button class="cal-nav-btn" style="padding:2px 8px; font-size:10px;" id="cal-lb-streaks-prev" onclick="calLbPage('streaks', -1)">◀</button>
-                <button class="cal-nav-btn" style="padding:2px 8px; font-size:10px;" id="cal-lb-streaks-next" onclick="calLbPage('streaks', 1)">▶</button>
-            </div>
-        </div>
-        <div style="background:rgba(0,0,0,0.3); border-radius:8px; border:1px solid var(--glass-border); display:flex; flex-direction:column; overflow:hidden;">
-            <div style="background:rgba(255,255,255,0.05); padding:8px; font-size:12px; font-weight:bold; text-align:center;" id="cal-lb-years-title">Top Years</div>
-            <div id="cal-lb-years-list" style="flex:1; padding:8px; min-height:200px;"></div>
-            <div style="display:flex; justify-content:space-between; padding:4px; background:rgba(0,0,0,0.4);">
-                <button class="cal-nav-btn" style="padding:2px 8px; font-size:10px;" id="cal-lb-years-prev" onclick="calLbPage('years', -1)">◀</button>
-                <button class="cal-nav-btn" style="padding:2px 8px; font-size:10px;" id="cal-lb-years-next" onclick="calLbPage('years', 1)">▶</button>
-            </div>
-        </div>
-        <div style="background:rgba(0,0,0,0.3); border-radius:8px; border:1px solid var(--glass-border); display:flex; flex-direction:column; overflow:hidden;">
-            <div style="background:rgba(255,255,255,0.05); padding:8px; font-size:12px; font-weight:bold; text-align:center;" id="cal-lb-months-title">Top Months</div>
-            <div id="cal-lb-months-list" style="flex:1; padding:8px; min-height:200px;"></div>
-            <div style="display:flex; justify-content:space-between; padding:4px; background:rgba(0,0,0,0.4);">
-                <button class="cal-nav-btn" style="padding:2px 8px; font-size:10px;" id="cal-lb-months-prev" onclick="calLbPage('months', -1)">◀</button>
-                <button class="cal-nav-btn" style="padding:2px 8px; font-size:10px;" id="cal-lb-months-next" onclick="calLbPage('months', 1)">▶</button>
-            </div>
-        </div>
-        <div style="background:rgba(0,0,0,0.3); border-radius:8px; border:1px solid var(--glass-border); display:flex; flex-direction:column; overflow:hidden;">
-            <div style="background:rgba(255,255,255,0.05); padding:8px; font-size:12px; font-weight:bold; text-align:center;" id="cal-lb-weeks-title">Top Weeks</div>
-            <div id="cal-lb-weeks-list" style="flex:1; padding:8px; min-height:200px;"></div>
-            <div style="display:flex; justify-content:space-between; padding:4px; background:rgba(0,0,0,0.4);">
-                <button class="cal-nav-btn" style="padding:2px 8px; font-size:10px;" id="cal-lb-weeks-prev" onclick="calLbPage('weeks', -1)">◀</button>
-                <button class="cal-nav-btn" style="padding:2px 8px; font-size:10px;" id="cal-lb-weeks-next" onclick="calLbPage('weeks', 1)">▶</button>
-            </div>
-        </div>
-        <div style="background:rgba(0,0,0,0.3); border-radius:8px; border:1px solid var(--glass-border); display:flex; flex-direction:column; overflow:hidden;">
-            <div style="background:rgba(255,255,255,0.05); padding:8px; font-size:12px; font-weight:bold; text-align:center;" id="cal-lb-days-title">Top Days</div>
-            <div id="cal-lb-days-list" style="flex:1; padding:8px; min-height:200px;"></div>
-            <div style="display:flex; justify-content:space-between; padding:4px; background:rgba(0,0,0,0.4);">
-                <button class="cal-nav-btn" style="padding:2px 8px; font-size:10px;" id="cal-lb-days-prev" onclick="calLbPage('days', -1)">◀</button>
-                <button class="cal-nav-btn" style="padding:2px 8px; font-size:10px;" id="cal-lb-days-next" onclick="calLbPage('days', 1)">▶</button>
-            </div>
-        </div>
-    </div>
+<div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; gap: 12px;">
+<span style="font-size:18px; font-weight:800; color:var(--highlight);">Database Stats & Leaderboards</span>
+<button class="cal-nav-btn" style="background:rgba(0,0,0,0.4); border-radius:8px; padding:6px 12px;" onclick="calCloseAdvModal()">✕</button>
+</div>
+<div style="display:flex; gap:16px; margin-bottom: 24px;">
+<div style="flex:1; background:rgba(0,0,0,0.3); padding:16px; border-radius:12px; border:1px solid var(--glass-border);">
+<div style="font-size:11px; font-weight:bold; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px;">Database Memory</div>
+<div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:8px;">
+<div style="text-align:center;"><div style="font-size:18px; font-weight:bold; color:#70b5f9;" id="cal-adv-g-chap">0</div><div style="font-size:10px; color:var(--text-muted);">Chapters</div></div>
+<div style="text-align:center;"><div style="font-size:18px; font-weight:bold; color:#fff;" id="cal-adv-g-tit">0</div><div style="font-size:10px; color:var(--text-muted);">Titles Read</div></div>
+<div style="text-align:center;"><div style="font-size:18px; font-weight:bold; color:#69f0ae;" id="cal-adv-g-start">0</div><div style="font-size:10px; color:var(--text-muted);">Started</div></div>
+<div style="text-align:center;"><div style="font-size:18px; font-weight:bold; color:#b39ddb;" id="cal-adv-g-fin">0</div><div style="font-size:10px; color:var(--text-muted);">Finished</div></div>
+</div>
+</div>
+<div style="flex:1; background:rgba(0,0,0,0.3); padding:16px; border-radius:12px; border:1px solid var(--glass-border);">
+<div id="cal-adv-y-label" style="font-size:11px; font-weight:bold; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px;">Current Year Stats</div>
+<div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:8px;">
+<div style="text-align:center;"><div style="font-size:18px; font-weight:bold; color:#70b5f9;" id="cal-adv-y-chap">0</div><div style="font-size:10px; color:var(--text-muted);">Chapters</div></div>
+<div style="text-align:center;"><div style="font-size:18px; font-weight:bold; color:#fff;" id="cal-adv-y-tit">0</div><div style="font-size:10px; color:var(--text-muted);">Titles Read</div></div>
+<div style="text-align:center;"><div style="font-size:18px; font-weight:bold; color:#69f0ae;" id="cal-adv-y-start">0</div><div style="font-size:10px; color:var(--text-muted);">Started</div></div>
+<div style="text-align:center;"><div style="font-size:18px; font-weight:bold; color:#b39ddb;" id="cal-adv-y-fin">0</div><div style="font-size:10px; color:var(--text-muted);">Finished</div></div>
+</div>
+</div>
+</div>
+<div style="display:flex; justify-content:center; gap:8px; margin-bottom:16px;">
+<button class="fetch-btn" id="cal-lb-btn-chapters" onclick="calSetLbMode('chapters')" style="background:var(--accent); color:#000; border-color:var(--accent);">Chapters Read</button>
+<button class="fetch-btn" id="cal-lb-btn-started" onclick="calSetLbMode('started')">Titles Started</button>
+<button class="fetch-btn" id="cal-lb-btn-finished" onclick="calSetLbMode('finished')">Titles Finished</button>
+</div>
+<div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:12px;" id="cal-lb-grid-container">
+<div style="background:rgba(0,0,0,0.3); border-radius:8px; border:1px solid var(--glass-border); display:flex; flex-direction:column; overflow:hidden;">
+<div style="background:rgba(255,255,255,0.05); padding:8px; font-size:12px; font-weight:bold; text-align:center;" id="cal-lb-streaks-title">Top Streaks</div>
+<div id="cal-lb-streaks-list" style="flex:1; padding:8px; min-height:200px;"></div>
+<div style="display:flex; justify-content:space-between; padding:4px; background:rgba(0,0,0,0.4);">
+<button class="cal-nav-btn" style="padding:2px 8px; font-size:10px;" id="cal-lb-streaks-prev" onclick="calLbPage('streaks', -1)">◀</button>
+<button class="cal-nav-btn" style="padding:2px 8px; font-size:10px;" id="cal-lb-streaks-next" onclick="calLbPage('streaks', 1)">▶</button>
+</div>
+</div>
+<div style="background:rgba(0,0,0,0.3); border-radius:8px; border:1px solid var(--glass-border); display:flex; flex-direction:column; overflow:hidden;">
+<div style="background:rgba(255,255,255,0.05); padding:8px; font-size:12px; font-weight:bold; text-align:center;" id="cal-lb-years-title">Top Years</div>
+<div id="cal-lb-years-list" style="flex:1; padding:8px; min-height:200px;"></div>
+<div style="display:flex; justify-content:space-between; padding:4px; background:rgba(0,0,0,0.4);">
+<button class="cal-nav-btn" style="padding:2px 8px; font-size:10px;" id="cal-lb-years-prev" onclick="calLbPage('years', -1)">◀</button>
+<button class="cal-nav-btn" style="padding:2px 8px; font-size:10px;" id="cal-lb-years-next" onclick="calLbPage('years', 1)">▶</button>
+</div>
+</div>
+<div style="background:rgba(0,0,0,0.3); border-radius:8px; border:1px solid var(--glass-border); display:flex; flex-direction:column; overflow:hidden;">
+<div style="background:rgba(255,255,255,0.05); padding:8px; font-size:12px; font-weight:bold; text-align:center;" id="cal-lb-months-title">Top Months</div>
+<div id="cal-lb-months-list" style="flex:1; padding:8px; min-height:200px;"></div>
+<div style="display:flex; justify-content:space-between; padding:4px; background:rgba(0,0,0,0.4);">
+<button class="cal-nav-btn" style="padding:2px 8px; font-size:10px;" id="cal-lb-months-prev" onclick="calLbPage('months', -1)">◀</button>
+<button class="cal-nav-btn" style="padding:2px 8px; font-size:10px;" id="cal-lb-months-next" onclick="calLbPage('months', 1)">▶</button>
+</div>
+</div>
+<div style="background:rgba(0,0,0,0.3); border-radius:8px; border:1px solid var(--glass-border); display:flex; flex-direction:column; overflow:hidden;">
+<div style="background:rgba(255,255,255,0.05); padding:8px; font-size:12px; font-weight:bold; text-align:center;" id="cal-lb-weeks-title">Top Weeks</div>
+<div id="cal-lb-weeks-list" style="flex:1; padding:8px; min-height:200px;"></div>
+<div style="display:flex; justify-content:space-between; padding:4px; background:rgba(0,0,0,0.4);">
+<button class="cal-nav-btn" style="padding:2px 8px; font-size:10px;" id="cal-lb-weeks-prev" onclick="calLbPage('weeks', -1)">◀</button>
+<button class="cal-nav-btn" style="padding:2px 8px; font-size:10px;" id="cal-lb-weeks-next" onclick="calLbPage('weeks', 1)">▶</button>
+</div>
+</div>
+<div style="background:rgba(0,0,0,0.3); border-radius:8px; border:1px solid var(--glass-border); display:flex; flex-direction:column; overflow:hidden;">
+<div style="background:rgba(255,255,255,0.05); padding:8px; font-size:12px; font-weight:bold; text-align:center;" id="cal-lb-days-title">Top Days</div>
+<div id="cal-lb-days-list" style="flex:1; padding:8px; min-height:200px;"></div>
+<div style="display:flex; justify-content:space-between; padding:4px; background:rgba(0,0,0,0.4);">
+<button class="cal-nav-btn" style="padding:2px 8px; font-size:10px;" id="cal-lb-days-prev" onclick="calLbPage('days', -1)">◀</button>
+<button class="cal-nav-btn" style="padding:2px 8px; font-size:10px;" id="cal-lb-days-next" onclick="calLbPage('days', 1)">▶</button>
+</div>
+</div>
+</div>
 </div>
 <script>
 const $ = id => document.getElementById(id);
@@ -1455,7 +1459,7 @@ if (!nodes || nodes.length === 0) {
 container.innerHTML = `<div style="width:100%; display:flex; justify-content:flex-end;"><button class="action-btn" style="padding:12px 16px; font-size:18px; border-radius:12px;" onclick="$('rec-container').style.display='none'; $('rec-overlay').style.display='none';">✕</button></div><div style="font-size:20px; color:var(--text-muted); text-align:center; padding:40px 0; width:100%;">No recommendation indices mapped for <br><strong style="color:#fff;">${baseTitle}</strong>.</div>`;
 return;
 }
-let html = `<div style="width:100%; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:16px; margin-bottom:24px;"><span style="font-size:24px; font-weight:700; color:var(--highlight); text-align:left; line-height:1.2;">Recommended Index: ${baseTitle}</span><button class="action-btn" style="padding:10px 16px; font-size:18px; border-radius:10px;" onclick="$('rec-container').style.display='none'; $('rec-overlay').style.display='none';">✕ Close</button></div><div class="rec-matrix-grid">`;
+let html = `<div style="width:100%; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:16px; margin-bottom:24px;"><span style="font-size:24px; font-weight:700; color:var(--highlight); text-align:left; line-height:1.2;">Recommended Index: ${baseTitle}</span><button class="action-btn" style="padding:10px 16px; font-size:18px; border-radius:10px;" onclick="$('rec-container').style.display='none'; $('rec-overlay').style.display='none';">✕ Close</button></div><div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(170px, 1fr)); gap:26px; width:100%; text-align:left;">`;
 let sortVal = $('exp-sort-filter').value;
 nodes.forEach(node => {
 let rec = node.mediaRecommendation; if (!rec) return;
@@ -1836,6 +1840,25 @@ resDiv.style.display = 'block';
 
 document.addEventListener('click', e => { if (!e.target.closest('#cal-title-search') && !e.target.closest('#cal-search-results')) { const resDiv = $('cal-search-results'); if (resDiv) resDiv.style.display = 'none'; } });
 
+function calJumpToDate(y, m, d) {
+calCloseHistory();
+calCurrentYear = y;
+calCurrentMonth = m;
+calNavigateMonth();
+setTimeout(() => {
+const dayCols = document.querySelectorAll('.day-column');
+for (let col of dayCols) {
+const dateNum = col.querySelector('.date-number');
+if (dateNum && parseInt(dateNum.innerText) === d) {
+col.scrollIntoView({ behavior: 'smooth', block: 'center' });
+calHighlightDay(col);
+if (!col.classList.contains('expanded')) col.classList.add('expanded');
+break;
+}
+}
+}, 150);
+}
+
 function calOpenHistory(title) {
 $('cal-search-results').style.display = 'none'; $('cal-title-search').value = ''; let history = [];
 for (let k in calGlobalCache) {
@@ -1854,7 +1877,7 @@ const dateStr = `${calMonthNames[h.month]} ${h.day}, ${h.year}`; let tags = [];
 if (h.started) tags.push('<span style="color:#69f0ae; border:1px solid #69f0ae; padding:2px 6px; border-radius:4px; font-size:10px; font-weight: bold;">Started</span>');
 if (h.completed) tags.push('<span style="color:#b39ddb; border:1px solid #b39ddb; padding:2px 6px; border-radius:4px; font-size:10px; font-weight: bold;">Finished</span>');
 let actionStr = h.chapters > 0 ? `Read <b style="color:var(--highlight)">${h.chapters}</b> chapters (up to ${h.max})` : `Logged interaction`;
-return `<div style="background:rgba(0,0,0,0.3); border:1px solid var(--glass-border); padding:12px; border-radius:8px; cursor:pointer; transition:0.2s;" onclick="${h.aId ? `window.open('https://anilist.co/activity/${h.aId}', '_blank')` : `calJumpToDate(${h.year}, ${h.month}, ${h.day})`}" onmouseover="this.style.borderColor='var(--accent)'; this.style.transform='translateX(4px)'" onmouseout="this.style.borderColor='var(--glass-border)'; this.style.transform='none'"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;"><span style="font-weight:700; color:var(--highlight); font-size:14px;">Day ${i + 1}: ${dateStr}</span><div style="display:flex; gap:6px;">${tags.join('')}</div></div><div style="font-size:13px; color:var(--text-muted);">${actionStr}</div></div>`;
+return `<div style="background:rgba(0,0,0,0.3); border:1px solid var(--glass-border); padding:12px; border-radius:8px; cursor:pointer; transition:0.2s;" onclick="calJumpToDate(${h.year}, ${h.month}, ${h.day})" onmouseover="this.style.borderColor='var(--accent)'; this.style.transform='translateX(4px)'" onmouseout="this.style.borderColor='var(--glass-border)'; this.style.transform='none'"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;"><span style="font-weight:700; color:var(--highlight); font-size:14px;">Day ${i + 1}: ${dateStr}</span><div style="display:flex; gap:6px;">${tags.join('')}</div></div><div style="font-size:13px; color:var(--text-muted);">${actionStr}</div></div>`;
 }).join('');
 }
 $('cal-history-overlay').style.display = 'block'; $('cal-history-modal').style.display = 'block';
