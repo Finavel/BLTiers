@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <title>BLTiers v4.4</title>
+    <title>BLTiers v4.4.1</title>
     <link rel="icon" type="image/png" href="Normal.png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -434,7 +434,7 @@
 </div>
 <div id="explorer-app" class="app-container">
     <div class="exp-filter-dashboard exp-glass" id="exp-settings-dash" style="display:grid;">
-        <div class="exp-filter-group"><span class="exp-filter-label">Sort Engine</span><select id="exp-sort-filter" onchange="expTriggerSearch()"><option value="MEAN_SCORE_DESC" selected>Mean Score</option><option value="SCORE_DESC">Average Score</option><option value="POPULARITY_DESC">Total Popularity</option><option value="TRENDING_DESC">Trending Now</option><option value="FAVOURITES_DESC">User Favorites</option><option value="UPDATED_AT_DESC">Recently Updated</option></select></div>
+        <div class="exp-filter-group"><span class="exp-filter-label">Sort Engine</span><select id="exp-sort-filter" onchange="expTriggerSearch()"><option value="MEAN_SCORE_DESC" selected>Mean Score</option><option value="SCORE_DESC">Average Score</option><option value="POPULARITY_DESC">Total Popularity</option><option value="TRENDING_DESC">Trending Now</option><option value="FAVOURITES_DESC">User Favorites</option><option value="UPDATED_AT_DESC">Recently Updated</option><option value="END_DATE_DESC">Recently Ended</option></select></div>
         <div class="exp-filter-group"><span class="exp-filter-label">Format / Category</span><select id="exp-format-filter" onchange="expTriggerSearch()"><option value="all" selected>All Sub-Formats</option><option value="MANGA">Standard Manga</option><option value="ONE_SHOT">One-Shot</option><option value="NOVEL">Light Novel</option><option value="MANHWA">Manhwa</option><option value="MANHUA">Manhua</option></select></div>
         <div class="exp-filter-group"><span class="exp-filter-label">Status</span><select id="exp-status-filter" onchange="expTriggerSearch()"><option value="all">All Statuses</option><option value="RELEASING">Ongoing</option><option value="FINISHED">Completed</option><option value="HIATUS">On Hiatus</option></select></div>
     </div>
@@ -2108,9 +2108,9 @@ let st = e.maxProgress - e.chaptersRead + 1;
 if (e.chaptersRead === 1) rn = `<br><span style="color:#ccc;font-size:10px;font-style:normal;display:block;margin-top:2px;line-height:1;">${u1} ${e.maxProgress}</span>`;
 else rn = `<br><span style="color:#ccc;font-size:10px;font-style:normal;display:block;margin-top:2px;line-height:1;">${u1} ${Math.max(1, st)}-${e.maxProgress}</span>`;
 }
-return `<div class="cal-entry-card ${e.id || e.activityId ? 'clickable' : ''}" ${cA}><div class="cal-entry-cover-wrapper">${e.isCompleted ? `<div class="cal-heart-icon">❤️</div>` : ''}<img src="${e.coverUrl}" class="cal-entry-cover"></div><div class="cal-entry-details" style="justify-content:center;"><span class="cal-entry-title ${e.isStarted ? 'started' : ''}">${e.title}</span><span class="cal-entry-chapter ${e.type === 'ANIME' ? 'anime' : ''} ${e.isReread ? 'reread' : ''}"><em onclick="event.stopPropagation();calEditChapters('${calCurrentYear}_${calCurrentMonth}',${dx},'${e.id}',event)" style="cursor:text;" title="Click to manually edit chapters">+${e.chaptersRead} ${e.chaptersRead === 1 ? u1 : u2}</em>${rn}</span></div></div>`;
+return `<div class="cal-entry-card ${e.id || e.activityId ? 'clickable' : ''}" ${cA}><div class="cal-entry-cover-wrapper">${e.isCompleted ? `<div class="cal-heart-icon" title="Finished Today">❤️</div>` : ''}<img src="${e.coverUrl}" alt="Cover" class="cal-entry-cover"></div><div class="cal-entry-details" style="justify-content:center;"><span class="cal-entry-title ${e.isStarted ? 'started' : ''}">${e.title}</span><span class="cal-entry-chapter ${e.type === 'ANIME' ? 'anime' : ''} ${e.isReread ? 'reread' : ''}"><em onclick="event.stopPropagation();calEditChapters('${calCurrentYear}_${calCurrentMonth}',${dx},'${e.id}',event)" style="cursor:text;" title="Click to manually edit chapters">+${e.chaptersRead} ${e.chaptersRead === 1 ? u1 : u2}</em>${rn}</span></div></div>`;
 };
-html += `<div style="padding:0 8px 8px;margin-top:-4px;">${renderEntry(dayData.entriesList[0], day)}</div>`;
+html += `<div style="padding: 0 12px 12px 12px; margin-top: -8px;">${renderEntry(dayData.entriesList[0], day)}</div>`;
 if (dayData.entriesList.length > 1) {
 html += `<div class="entries-dropdown">`; for (let i = 1; i < dayData.entriesList.length; i++) { html += renderEntry(dayData.entriesList[i], day); } html += `</div>`;
 }
